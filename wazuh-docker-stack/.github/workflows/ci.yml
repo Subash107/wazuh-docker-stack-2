@@ -1,0 +1,31 @@
+name: Wazuh Docker CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  validate-docker-compose:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Validate YAML Syntax
+        run: |
+          sudo apt update
+          sudo apt install -y yamllint
+          yamllint docker-compose.yml
+
+      - name: Install Docker Compose
+        run: |
+          sudo apt install -y docker-compose
+
+      - name: Validate Docker Compose Config
+        run: |
+          docker-compose config

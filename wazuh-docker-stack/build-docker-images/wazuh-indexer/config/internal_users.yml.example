@@ -1,0 +1,65 @@
+---
+# Replace each hash with a bcrypt hash generated for your deployment.
+
+_meta:
+  type: "internalusers"
+  config_version: 2
+
+admin:
+  hash: "CHANGE_ME_BCRYPT_HASH_FOR_ADMIN"
+  reserved: true
+  backend_roles:
+  - "admin"
+  description: "Admin user"
+
+kibanaserver:
+  hash: "CHANGE_ME_BCRYPT_HASH_FOR_DASHBOARD"
+  reserved: true
+  description: "Dashboard service user"
+
+kibanaro:
+  hash: "CHANGE_ME_BCRYPT_HASH_FOR_KIBANARO"
+  reserved: false
+  backend_roles:
+  - "kibanauser"
+  - "readall"
+  description: "Read-only dashboard user"
+
+logstash:
+  hash: "CHANGE_ME_BCRYPT_HASH_FOR_LOGSTASH"
+  reserved: false
+  backend_roles:
+  - "logstash"
+  description: "Logstash service user"
+
+readall:
+  hash: "CHANGE_ME_BCRYPT_HASH_FOR_READALL"
+  reserved: false
+  backend_roles:
+  - "readall"
+  description: "Read-all user"
+
+snapshotrestore:
+  hash: "CHANGE_ME_BCRYPT_HASH_FOR_SNAPSHOTRESTORE"
+  reserved: false
+  backend_roles:
+  - "snapshotrestore"
+  description: "Snapshot restore user"
+
+wazuh_admin:
+  hash: "CHANGE_ME_BCRYPT_HASH_FOR_WAZUH_ADMIN"
+  reserved: true
+  hidden: false
+  backend_roles: []
+  attributes: {}
+  opendistro_security_roles: []
+  static: false
+
+wazuh_user:
+  hash: "CHANGE_ME_BCRYPT_HASH_FOR_WAZUH_USER"
+  reserved: true
+  hidden: false
+  backend_roles: []
+  attributes: {}
+  opendistro_security_roles: []
+  static: false

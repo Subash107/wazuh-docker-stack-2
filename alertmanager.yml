@@ -1,0 +1,205 @@
+global:
+  resolve_timeout: 1m
+  smtp_smarthost: "smtp-relay.brevo.com:587"
+  # For reliable Inbox placement, replace this with a sender from an authenticated Brevo domain.
+  smtp_from: "lamasubash26@outlook.com"
+  smtp_auth_username: "a412aa001@smtp-brevo.com"
+  smtp_auth_password_file: "/run/secrets/brevo_smtp_key.txt"
+  smtp_require_tls: true
+
+route:
+  receiver: "null"
+  routes:
+    - receiver: "email"
+      matchers:
+        - alertname="WazuhThreatDetected"
+      group_by: ["alertname", "agent", "srcip", "wazuh_rule_id", "event_id"]
+      group_wait: 5s
+      group_interval: 30s
+      repeat_interval: 2h
+
+receivers:
+  - name: "null"
+  - name: "email"
+    email_configs:
+      - to: "lamasubash26@outlook.com"
+        send_resolved: false
+        headers:
+          Subject: "[{{ .CommonLabels.severity }}][{{ .CommonAnnotations.threat_source }}] {{ .CommonAnnotations.email_subject }}"
+        text: |
+          Wazuh threat notification
+          ========================
+
+          Summary: {{ .CommonAnnotations.summary }}
+          Detected at (UTC): {{ .CommonAnnotations.event_time_utc }}
+          Threat source: {{ .CommonAnnotations.threat_source }}
+          Event category: {{ .CommonAnnotations.event_category }}
+          Threat scope: {{ .CommonAnnotations.threat_scope }}
+          Threat initiated from: {{ .CommonAnnotations.origin_endpoint }}
+          Threat origin scope: {{ .CommonAnnotations.origin_location_scope }}
+          Threat origin location: {{ .CommonAnnotations.origin_geo_location }}
+          Threat origin organization: {{ .CommonAnnotations.origin_geo_org }}
+          Threat origin ISP: {{ .CommonAnnotations.origin_geo_isp }}
+          Threat origin domain: {{ .CommonAnnotations.origin_geo_domain }}
+          Threat origin ASN: {{ .CommonAnnotations.origin_geo_asn }}
+          Correlation summary: {{ .CommonAnnotations.correlation_summary }}
+          First seen (UTC): {{ .CommonAnnotations.correlation_first_seen_utc }}
+          Last seen (UTC): {{ .CommonAnnotations.correlation_last_seen_utc }}
+          Repeat count: {{ .CommonAnnotations.correlation_repeat_count }}
+          Correlated tools: {{ .CommonAnnotations.correlation_tools }}
+          Correlated agents: {{ .CommonAnnotations.correlation_agents }}
+          Severity: {{ .CommonLabels.severity }} (Wazuh level {{ .CommonLabels.wazuh_level }})
+          Rule: {{ .CommonLabels.wazuh_rule_id }} - {{ .CommonAnnotations.description }}
+          Fired times: {{ .CommonAnnotations.rule_firedtimes }}
+          Event ID: {{ .CommonLabels.event_id }}
+
+          Threat timeline
+          ---------------
+          Window: last {{ .CommonAnnotations.correlation_window_minutes }} minutes
+          Related activity:
+          {{ .CommonAnnotations.correlation_recent_activity }}
+
+          Affected asset
+          --------------
+          Agent: {{ .CommonLabels.agent }} (ID {{ .CommonAnnotations.agent_id }})
+          Agent IP: {{ .CommonLabels.agent_ip }}
+          Manager: {{ .CommonAnnotations.manager_name }}
+          Decoder: {{ .CommonAnnotations.decoder_name }}
+          Log source: {{ .CommonAnnotations.log_source }}
+
+          Network path
+          ------------
+          Local endpoint: {{ .CommonAnnotations.local_ip }}:{{ .CommonAnnotations.local_port }}
+          Remote endpoint: {{ .CommonAnnotations.remote_ip }}:{{ .CommonAnnotations.remote_port }}
+          Source endpoint: {{ .CommonAnnotations.source_ip }}:{{ .CommonAnnotations.source_port }}
+          Destination endpoint: {{ .CommonAnnotations.destination_ip }}:{{ .CommonAnnotations.destination_port }}
+          Observed endpoint: {{ .CommonAnnotations.observed_ip }}:{{ .CommonAnnotations.observed_port }}
+          Protocol: {{ .CommonAnnotations.protocol }}
+          App protocol: {{ .CommonAnnotations.application_protocol }}
+          Direction: {{ .CommonAnnotations.traffic_direction }}
+          Network scope: {{ .CommonAnnotations.remote_location }}
+          Network context: {{ .CommonAnnotations.network_context }}
+          Listening ports: {{ .CommonAnnotations.listening_ports }}
+          Indicator: {{ .CommonAnnotations.network_indicator }}
+
+          Geo context
+          -----------
+          Threat initiated from: {{ .CommonAnnotations.origin_endpoint }}
+          Threat origin scope: {{ .CommonAnnotations.origin_location_scope }}
+          Location: {{ .CommonAnnotations.geo_location }}
+          City: {{ .CommonAnnotations.geo_city }}
+          Region: {{ .CommonAnnotations.geo_region }}
+          Country: {{ .CommonAnnotations.geo_country }}
+          Coordinates: {{ .CommonAnnotations.geo_coordinates }}
+          Organization: {{ .CommonAnnotations.geo_org }}
+          ISP: {{ .CommonAnnotations.geo_isp }}
+          Domain: {{ .CommonAnnotations.geo_domain }}
+          ASN: {{ .CommonAnnotations.geo_asn }}
+
+          Threat details
+          --------------
+          Suricata signature: {{ .CommonAnnotations.suricata_signature }}
+          Suricata signature ID: {{ .CommonAnnotations.suricata_signature_id }}
+          Suricata category: {{ .CommonAnnotations.suricata_category }}
+          Suricata severity: {{ .CommonAnnotations.suricata_severity }}
+          Suricata event type: {{ .CommonAnnotations.suricata_event_type }}
+          Suricata flow ID: {{ .CommonAnnotations.suricata_flow_id }}
+          DNS query: {{ .CommonAnnotations.dns_query }}
+          HTTP host: {{ .CommonAnnotations.http_hostname }}
+          HTTP URL: {{ .CommonAnnotations.http_url }}
+          TLS SNI: {{ .CommonAnnotations.tls_sni }}
+
+          MITRE and context
+          -----------------
+          MITRE IDs: {{ .CommonAnnotations.mitre_ids }}
+          MITRE tactics: {{ .CommonAnnotations.mitre_tactics }}
+          MITRE techniques: {{ .CommonAnnotations.mitre_techniques }}
+          Rule groups: {{ .CommonAnnotations.rule_groups }}
+
+          Recommended action
+          ------------------
+          {{ .CommonAnnotations.action_hint }}
+
+          Dashboard: {{ .CommonAnnotations.dashboard_url }}
+          Search hint: {{ .CommonAnnotations.dashboard_search_hint }}
+
+          Raw log
+          -------
+          {{ .CommonAnnotations.full_log }}
+        html: |
+          <div style="font-family:Segoe UI, Arial, sans-serif; max-width:900px; color:#1f2937;">
+            <h2 style="margin-bottom:8px;">{{ .CommonAnnotations.summary }}</h2>
+            <p style="margin-top:0;"><b>Detected at (UTC):</b> {{ .CommonAnnotations.event_time_utc }}</p>
+            <table style="border-collapse:collapse; width:100%; margin-bottom:16px;">
+              <tr><td style="padding:6px 8px; border:1px solid #d1d5db;"><b>Severity</b></td><td style="padding:6px 8px; border:1px solid #d1d5db;">{{ .CommonLabels.severity }} (Wazuh level {{ .CommonLabels.wazuh_level }})</td></tr>
+              <tr><td style="padding:6px 8px; border:1px solid #d1d5db;"><b>Threat source</b></td><td style="padding:6px 8px; border:1px solid #d1d5db;">{{ .CommonAnnotations.threat_source }}</td></tr>
+              <tr><td style="padding:6px 8px; border:1px solid #d1d5db;"><b>Event category</b></td><td style="padding:6px 8px; border:1px solid #d1d5db;">{{ .CommonAnnotations.event_category }}</td></tr>
+              <tr><td style="padding:6px 8px; border:1px solid #d1d5db;"><b>Threat initiated from</b></td><td style="padding:6px 8px; border:1px solid #d1d5db;">{{ .CommonAnnotations.origin_endpoint }}</td></tr>
+              <tr><td style="padding:6px 8px; border:1px solid #d1d5db;"><b>Origin location</b></td><td style="padding:6px 8px; border:1px solid #d1d5db;">{{ .CommonAnnotations.origin_geo_location }}</td></tr>
+              <tr><td style="padding:6px 8px; border:1px solid #d1d5db;"><b>Origin organization</b></td><td style="padding:6px 8px; border:1px solid #d1d5db;">{{ .CommonAnnotations.origin_geo_org }} / {{ .CommonAnnotations.origin_geo_isp }}</td></tr>
+              <tr><td style="padding:6px 8px; border:1px solid #d1d5db;"><b>Correlation summary</b></td><td style="padding:6px 8px; border:1px solid #d1d5db;">{{ .CommonAnnotations.correlation_summary }}</td></tr>
+              <tr><td style="padding:6px 8px; border:1px solid #d1d5db;"><b>First / last seen</b></td><td style="padding:6px 8px; border:1px solid #d1d5db;">{{ .CommonAnnotations.correlation_first_seen_utc }} / {{ .CommonAnnotations.correlation_last_seen_utc }}</td></tr>
+              <tr><td style="padding:6px 8px; border:1px solid #d1d5db;"><b>Correlated tools</b></td><td style="padding:6px 8px; border:1px solid #d1d5db;">{{ .CommonAnnotations.correlation_tools }}</td></tr>
+              <tr><td style="padding:6px 8px; border:1px solid #d1d5db;"><b>Correlated agents</b></td><td style="padding:6px 8px; border:1px solid #d1d5db;">{{ .CommonAnnotations.correlation_agents }}</td></tr>
+              <tr><td style="padding:6px 8px; border:1px solid #d1d5db;"><b>Rule</b></td><td style="padding:6px 8px; border:1px solid #d1d5db;">{{ .CommonLabels.wazuh_rule_id }} - {{ .CommonAnnotations.description }}</td></tr>
+              <tr><td style="padding:6px 8px; border:1px solid #d1d5db;"><b>Event ID</b></td><td style="padding:6px 8px; border:1px solid #d1d5db;">{{ .CommonLabels.event_id }}</td></tr>
+            </table>
+
+            <h3 style="margin-bottom:8px;">Threat Timeline</h3>
+            <p><b>Window:</b> last {{ .CommonAnnotations.correlation_window_minutes }} minutes</p>
+            <p><b>Related activity:</b></p>
+            <pre style="white-space:pre-wrap; word-break:break-word; background:#f9fafb; border:1px solid #d1d5db; padding:12px;">{{ .CommonAnnotations.correlation_recent_activity }}</pre>
+
+            <h3 style="margin-bottom:8px;">Affected Asset</h3>
+            <table style="border-collapse:collapse; width:100%; margin-bottom:16px;">
+              <tr><td style="padding:6px 8px; border:1px solid #d1d5db;"><b>Agent</b></td><td style="padding:6px 8px; border:1px solid #d1d5db;">{{ .CommonLabels.agent }} (ID {{ .CommonAnnotations.agent_id }})</td></tr>
+              <tr><td style="padding:6px 8px; border:1px solid #d1d5db;"><b>Agent IP</b></td><td style="padding:6px 8px; border:1px solid #d1d5db;">{{ .CommonLabels.agent_ip }}</td></tr>
+              <tr><td style="padding:6px 8px; border:1px solid #d1d5db;"><b>Manager</b></td><td style="padding:6px 8px; border:1px solid #d1d5db;">{{ .CommonAnnotations.manager_name }}</td></tr>
+              <tr><td style="padding:6px 8px; border:1px solid #d1d5db;"><b>Decoder</b></td><td style="padding:6px 8px; border:1px solid #d1d5db;">{{ .CommonAnnotations.decoder_name }}</td></tr>
+              <tr><td style="padding:6px 8px; border:1px solid #d1d5db;"><b>Log source</b></td><td style="padding:6px 8px; border:1px solid #d1d5db;">{{ .CommonAnnotations.log_source }}</td></tr>
+            </table>
+
+            <h3 style="margin-bottom:8px;">Network Path</h3>
+            <table style="border-collapse:collapse; width:100%; margin-bottom:16px;">
+              <tr><td style="padding:6px 8px; border:1px solid #d1d5db;"><b>Local endpoint</b></td><td style="padding:6px 8px; border:1px solid #d1d5db;">{{ .CommonAnnotations.local_ip }}:{{ .CommonAnnotations.local_port }}</td></tr>
+              <tr><td style="padding:6px 8px; border:1px solid #d1d5db;"><b>Remote endpoint</b></td><td style="padding:6px 8px; border:1px solid #d1d5db;">{{ .CommonAnnotations.remote_ip }}:{{ .CommonAnnotations.remote_port }}</td></tr>
+              <tr><td style="padding:6px 8px; border:1px solid #d1d5db;"><b>Source endpoint</b></td><td style="padding:6px 8px; border:1px solid #d1d5db;">{{ .CommonAnnotations.source_ip }}:{{ .CommonAnnotations.source_port }}</td></tr>
+              <tr><td style="padding:6px 8px; border:1px solid #d1d5db;"><b>Destination endpoint</b></td><td style="padding:6px 8px; border:1px solid #d1d5db;">{{ .CommonAnnotations.destination_ip }}:{{ .CommonAnnotations.destination_port }}</td></tr>
+              <tr><td style="padding:6px 8px; border:1px solid #d1d5db;"><b>Observed endpoint</b></td><td style="padding:6px 8px; border:1px solid #d1d5db;">{{ .CommonAnnotations.observed_ip }}:{{ .CommonAnnotations.observed_port }}</td></tr>
+              <tr><td style="padding:6px 8px; border:1px solid #d1d5db;"><b>Protocol</b></td><td style="padding:6px 8px; border:1px solid #d1d5db;">{{ .CommonAnnotations.protocol }} / {{ .CommonAnnotations.application_protocol }}</td></tr>
+              <tr><td style="padding:6px 8px; border:1px solid #d1d5db;"><b>Direction</b></td><td style="padding:6px 8px; border:1px solid #d1d5db;">{{ .CommonAnnotations.traffic_direction }}</td></tr>
+              <tr><td style="padding:6px 8px; border:1px solid #d1d5db;"><b>Scope</b></td><td style="padding:6px 8px; border:1px solid #d1d5db;">{{ .CommonAnnotations.remote_location }}</td></tr>
+              <tr><td style="padding:6px 8px; border:1px solid #d1d5db;"><b>Indicator</b></td><td style="padding:6px 8px; border:1px solid #d1d5db;">{{ .CommonAnnotations.network_indicator }}</td></tr>
+              <tr><td style="padding:6px 8px; border:1px solid #d1d5db;"><b>Context</b></td><td style="padding:6px 8px; border:1px solid #d1d5db;">{{ .CommonAnnotations.network_context }}</td></tr>
+            </table>
+
+            <h3 style="margin-bottom:8px;">Geo Context</h3>
+            <table style="border-collapse:collapse; width:100%; margin-bottom:16px;">
+              <tr><td style="padding:6px 8px; border:1px solid #d1d5db;"><b>Threat origin location</b></td><td style="padding:6px 8px; border:1px solid #d1d5db;">{{ .CommonAnnotations.origin_geo_location }}</td></tr>
+              <tr><td style="padding:6px 8px; border:1px solid #d1d5db;"><b>Threat origin city / region / country</b></td><td style="padding:6px 8px; border:1px solid #d1d5db;">{{ .CommonAnnotations.origin_geo_city }} / {{ .CommonAnnotations.origin_geo_region }} / {{ .CommonAnnotations.origin_geo_country }}</td></tr>
+              <tr><td style="padding:6px 8px; border:1px solid #d1d5db;"><b>Threat origin organization</b></td><td style="padding:6px 8px; border:1px solid #d1d5db;">{{ .CommonAnnotations.origin_geo_org }}</td></tr>
+              <tr><td style="padding:6px 8px; border:1px solid #d1d5db;"><b>Threat origin ISP / ASN</b></td><td style="padding:6px 8px; border:1px solid #d1d5db;">{{ .CommonAnnotations.origin_geo_isp }} / {{ .CommonAnnotations.origin_geo_asn }}</td></tr>
+              <tr><td style="padding:6px 8px; border:1px solid #d1d5db;"><b>Threat origin domain</b></td><td style="padding:6px 8px; border:1px solid #d1d5db;">{{ .CommonAnnotations.origin_geo_domain }}</td></tr>
+              <tr><td style="padding:6px 8px; border:1px solid #d1d5db;"><b>Threat origin coordinates</b></td><td style="padding:6px 8px; border:1px solid #d1d5db;">{{ .CommonAnnotations.origin_geo_coordinates }}</td></tr>
+            </table>
+
+            <h3 style="margin-bottom:8px;">Threat Details</h3>
+            <table style="border-collapse:collapse; width:100%; margin-bottom:16px;">
+              <tr><td style="padding:6px 8px; border:1px solid #d1d5db;"><b>Signature</b></td><td style="padding:6px 8px; border:1px solid #d1d5db;">{{ .CommonAnnotations.suricata_signature }}</td></tr>
+              <tr><td style="padding:6px 8px; border:1px solid #d1d5db;"><b>Signature ID</b></td><td style="padding:6px 8px; border:1px solid #d1d5db;">{{ .CommonAnnotations.suricata_signature_id }}</td></tr>
+              <tr><td style="padding:6px 8px; border:1px solid #d1d5db;"><b>Category</b></td><td style="padding:6px 8px; border:1px solid #d1d5db;">{{ .CommonAnnotations.suricata_category }}</td></tr>
+              <tr><td style="padding:6px 8px; border:1px solid #d1d5db;"><b>Suricata severity</b></td><td style="padding:6px 8px; border:1px solid #d1d5db;">{{ .CommonAnnotations.suricata_severity }}</td></tr>
+              <tr><td style="padding:6px 8px; border:1px solid #d1d5db;"><b>Event type / flow ID</b></td><td style="padding:6px 8px; border:1px solid #d1d5db;">{{ .CommonAnnotations.suricata_event_type }} / {{ .CommonAnnotations.suricata_flow_id }}</td></tr>
+              <tr><td style="padding:6px 8px; border:1px solid #d1d5db;"><b>DNS / HTTP / TLS</b></td><td style="padding:6px 8px; border:1px solid #d1d5db;">{{ .CommonAnnotations.dns_query }} / {{ .CommonAnnotations.http_hostname }} {{ .CommonAnnotations.http_url }} / {{ .CommonAnnotations.tls_sni }}</td></tr>
+              <tr><td style="padding:6px 8px; border:1px solid #d1d5db;"><b>MITRE</b></td><td style="padding:6px 8px; border:1px solid #d1d5db;">{{ .CommonAnnotations.mitre_ids }} | {{ .CommonAnnotations.mitre_tactics }} | {{ .CommonAnnotations.mitre_techniques }}</td></tr>
+              <tr><td style="padding:6px 8px; border:1px solid #d1d5db;"><b>Rule groups</b></td><td style="padding:6px 8px; border:1px solid #d1d5db;">{{ .CommonAnnotations.rule_groups }}</td></tr>
+            </table>
+
+            <h3 style="margin-bottom:8px;">Recommended Action</h3>
+            <p>{{ .CommonAnnotations.action_hint }}</p>
+            <p><b>Dashboard:</b> <a href="{{ .CommonAnnotations.dashboard_url }}">{{ .CommonAnnotations.dashboard_url }}</a></p>
+            <p><b>Search hint:</b> {{ .CommonAnnotations.dashboard_search_hint }}</p>
+
+            <h3 style="margin-bottom:8px;">Raw Log</h3>
+            <pre style="white-space:pre-wrap; word-break:break-word; background:#f3f4f6; border:1px solid #d1d5db; padding:12px;">{{ .CommonAnnotations.full_log }}</pre>
+          </div>

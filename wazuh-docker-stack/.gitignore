@@ -1,0 +1,9 @@
+# Logs
+logs/*.log
+
+# SSL certificates – keep them out of the repository
+single-node/config/**/ssl_certs/*
+
+# Temporary files
+*.tmp
+*.bak

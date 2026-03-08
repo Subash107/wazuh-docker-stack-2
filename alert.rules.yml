@@ -1,0 +1,58 @@
+groups:
+  - name: monitoring_stack_health
+    rules:
+      - alert: PrometheusTargetDown
+        expr: up{job=~"prometheus|alertmanager|blackbox_exporter"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Monitoring service {{ $labels.job }} is unreachable"
+          description: "Prometheus has been unable to scrape {{ $labels.instance }} for more than 2 minutes."
+
+      - alert: PrometheusConfigReloadFailed
+        expr: prometheus_config_last_reload_successful == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Prometheus configuration reload failed"
+          description: "Prometheus rejected the current configuration or rule files."
+
+      - alert: AlertmanagerConfigReloadFailed
+        expr: alertmanager_config_last_reload_successful == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Alertmanager configuration reload failed"
+          description: "Alertmanager rejected the current configuration file."
+
+      - alert: AlertmanagerNotificationsFailing
+        expr: increase(alertmanager_notifications_failed_total[10m]) > 0
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Alertmanager notification delivery is failing"
+          description: "Alertmanager has recorded failed notifications in the last 10 minutes."
+
+  - name: ping_alerts
+    rules:
+      - alert: ServerDown
+        expr: probe_success{job="ping_servers"} == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Server {{ $labels.instance }} is down"
+          description: "ICMP probe failed for more than 30 seconds."
+
+      - alert: ServerLatencyHigh
+        expr: avg_over_time(probe_duration_seconds{job="ping_servers"}[5m]) > 1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Server {{ $labels.instance }} latency is elevated"
+          description: "Average ICMP probe duration has stayed above 1 second for 10 minutes."

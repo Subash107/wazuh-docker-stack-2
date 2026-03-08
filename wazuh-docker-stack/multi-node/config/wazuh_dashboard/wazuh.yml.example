@@ -1,0 +1,7 @@
+hosts:
+  - 1513629884013:
+      url: "https://wazuh.master"
+      port: 55000
+      username: wazuh-wui
+      password: "CHANGE_ME"
+      run_as: true

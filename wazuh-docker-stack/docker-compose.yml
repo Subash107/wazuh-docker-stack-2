@@ -1,0 +1,22 @@
+---
+version: "3.8"
+
+services:
+  wazuh:
+    image: wazuh/wazuh:4.7.3
+    ports:
+      - "1514:1514"
+      - "55000:55000"
+    restart: always
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    restart: always
+
+  alertmanager:
+    image: prom/alertmanager:latest
+    ports:
+      - "9093:9093"
+    restart: always
