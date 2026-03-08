@@ -1,51 +1,80 @@
-# Monitoring Workspace
+# Monitoring Stack
 
-This workspace contains the active monitoring stack at the repository root and the Wazuh single-node stack under `wazuh-docker-stack/`.
+This repository packages a small SOC-style monitoring environment built around Wazuh, Prometheus, Alertmanager, and Blackbox Exporter. It is structured for local deployment first, with the root stack handling monitoring and alert delivery while the bundled `wazuh-docker-stack/` directory provides the Wazuh platform and recovery assets.
 
-## Active Runtime Paths
+## What is included
 
-Do not move or rename these paths without updating Docker and restarting services:
+- Prometheus for metrics collection and alert evaluation
+- Blackbox Exporter for ICMP availability checks
+- Alertmanager for routing notifications
+- A Python-based Wazuh alert forwarder that reads Wazuh alerts and posts normalized alerts into Alertmanager
+- A bundled Wazuh Docker stack with single-node, multi-node, and recovery material
 
-- `docker-compose.yml`
-- `.env`
-- `prometheus.yml`
-- `alert.rules.yml`
-- `alertmanager.yml`
-- `targets/`
-- `secrets/`
-- `scripts/python/`
-- `wazuh-docker-stack/single-node/config/`
+## Repository layout
 
-## Folder Guide
+```text
+.
+|-- docker-compose.yml
+|-- prometheus.yml
+|-- alert.rules.yml
+|-- alertmanager.yml
+|-- .env.example
+|-- targets/
+|-- scripts/
+|   |-- python/
+|   |-- windows/
+|   `-- linux/
+|-- docs/
+|   |-- runbooks/
+|   `-- reference/
+`-- wazuh-docker-stack/
+```
 
-- `archives/` historical ZIPs and archived workspace snapshots
-- `docs/` runbooks, guides, and reference material
-- `logs/` host-side logs and deployment evidence
-- `media/` screenshots and media assets
-- `projects/reference/` upstream and reference material
-- `scripts/linux/` Linux helper scripts
-- `scripts/python/` Python automation used by the running forwarder
-- `scripts/windows/` Windows helper scripts
-- `soc-stack/` migration helper for the separate SOC stack project
-- `Sysmon/` Sysmon binaries and EULA
-- `targets/` Prometheus file-based target inventories
-- `wazuh-docker-stack/` Wazuh deployment, config, and recovery bundle
+## How the stack is split
 
-## Runtime Settings
+- Repository root: monitoring services, alert routing, and the custom Wazuh-to-Alertmanager forwarder
+- `wazuh-docker-stack/`: Wazuh deployment assets, Docker Compose stacks, and recovery automation
 
-- `.env` active Compose settings for image pins and forwarder runtime values
-- `.env.example` template copy of the same settings
-- `targets/ping_servers.yml` editable inventory for ICMP probe targets
+The root monitoring stack expects the external Docker volume `single-node_wazuh_logs` to exist, which is provided by the single-node Wazuh deployment.
+
+## Quick start
+
+1. Copy `.env.example` to `.env` and adjust values for your environment.
+2. Create required local-only secrets under `secrets/`.
+3. Review `targets/ping_servers.yml` and update monitored hosts.
+4. Start the Wazuh single-node stack from `wazuh-docker-stack/single-node/`.
+5. Start the monitoring stack from the repository root with `docker compose up -d`.
+
+## Configuration files
+
+- `docker-compose.yml`: root monitoring services
+- `prometheus.yml`: scrape jobs and alerting targets
+- `alert.rules.yml`: stack health and ICMP probe alerts
+- `alertmanager.yml`: notification routing
+- `targets/ping_servers.yml`: file-based ICMP target inventory
 
 ## Operations
 
-- `scripts/windows/Invoke-MonitoringPhase1Rollout.ps1` validation-first rollout helper for the staged Phase 1 changes
-- `docs/runbooks/phase1-rollout.md` human-readable rollout procedure and rollback notes
+- `docs/runbooks/phase1-rollout.md`: staged rollout and rollback notes
+- `scripts/windows/Invoke-MonitoringPhase1Rollout.ps1`: validation-first rollout helper
 
-## Archived Snapshot
+## Secrets and publish safety
 
-Legacy duplicate config backups were moved out of the active workspace to:
+This repository is prepared for public Git hosting:
 
-- `archives/workspace-snapshots/20260309-000338/`
+- live secrets are excluded from Git
+- example config files are tracked instead of secret-bearing runtime files
+- local-only files such as `.env`, dashboard credentials, and certificate material remain untracked
 
-That snapshot contains the older `.bak` files and the previous Python backup so the working area stays clean without losing rollback history.
+Before deploying, create or supply these local-only inputs yourself:
+
+- `.env`
+- `secrets/brevo_smtp_key.txt`
+- Wazuh dashboard runtime config
+- Wazuh indexer user credential material and certificates
+
+## Notes
+
+- The repository contains deployment scripts for both Windows and Linux operators.
+- The bundled Wazuh stack includes upstream-style build and recovery assets in addition to runtime Compose files.
+- The current public branch is intended to be safe to share, but it is still a deployment repository, not a generic product template.
