@@ -1,0 +1,15 @@
+- targets:
+    - http://192.168.1.6:8080/admin/login
+  labels:
+    probe_group: sensor_http
+    service_name: pihole_admin
+    dashboard_name: pihole
+    host_name: sensor_vm
+
+- targets:
+    - http://192.168.1.6:8083/
+  labels:
+    probe_group: sensor_http
+    service_name: mitmproxy_ui
+    dashboard_name: mitmproxy
+    host_name: sensor_vm

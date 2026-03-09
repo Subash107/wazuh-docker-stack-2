@@ -1,0 +1,16 @@
+[Unit]
+Description=Monitoring sensor Docker Compose stack
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/lib/monitoring-sensor/composectl.sh /opt/monitoring-sensor up
+ExecReload=/usr/local/lib/monitoring-sensor/composectl.sh /opt/monitoring-sensor up
+ExecStop=/usr/local/lib/monitoring-sensor/composectl.sh /opt/monitoring-sensor down
+TimeoutStartSec=0
+
+[Install]
+WantedBy=multi-user.target

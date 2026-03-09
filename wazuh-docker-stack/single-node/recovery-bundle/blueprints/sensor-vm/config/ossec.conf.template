@@ -1,0 +1,70 @@
+<ossec_config>
+  <client>
+    <server>
+      <address>__MANAGER_IP__</address>
+      <port>__MANAGER_PORT__</port>
+      <protocol>tcp</protocol>
+    </server>
+    <client_buffer>
+      <disabled>no</disabled>
+      <queue_size>5000</queue_size>
+    </client_buffer>
+  </client>
+
+  <logging>
+    <log_format>plain</log_format>
+  </logging>
+
+  <localfile>
+    <log_format>command</log_format>
+    <command>df -h</command>
+    <frequency>300</frequency>
+  </localfile>
+
+  <localfile>
+    <log_format>command</log_format>
+    <command>free -m</command>
+    <frequency>300</frequency>
+  </localfile>
+
+  <localfile>
+    <log_format>command</log_format>
+    <command>ps auxf</command>
+    <frequency>300</frequency>
+  </localfile>
+
+  <localfile>
+    <log_format>syslog</log_format>
+    <location>/var/log/syslog</location>
+  </localfile>
+
+  <localfile>
+    <log_format>syslog</log_format>
+    <location>/var/log/auth.log</location>
+  </localfile>
+
+  <localfile>
+    <log_format>syslog</log_format>
+    <location>/var/log/ssh*</location>
+  </localfile>
+
+  <localfile>
+    <log_format>json</log_format>
+    <location>/var/lib/docker/containers/*/*.log</location>
+  </localfile>
+
+  <localfile>
+    <log_format>json</log_format>
+    <location>/var/log/suricata/eve.json</location>
+  </localfile>
+
+  <integrity_monitoring>
+    <disabled>no</disabled>
+    <directories check_all="yes" report_changes="yes" realtime="yes">/etc</directories>
+    <directories check_all="yes" report_changes="yes" realtime="yes">/usr/bin</directories>
+  </integrity_monitoring>
+
+  <rootkit_detection>
+    <disabled>no</disabled>
+  </rootkit_detection>
+</ossec_config>

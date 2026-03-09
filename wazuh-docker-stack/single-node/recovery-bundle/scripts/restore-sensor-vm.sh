@@ -76,7 +76,17 @@ if [[ "$SKIP_PACKAGE_INSTALL" != "true" ]]; then
     python3-venv \
     rsyslog \
     suricata
+
+  apt-get install -y docker-compose-plugin >/dev/null 2>&1 || apt-get install -y docker-compose >/dev/null 2>&1 || true
 fi
+
+enable_and_restart_if_present() {
+  local service="$1"
+  if systemctl list-unit-files "$service" >/dev/null 2>&1; then
+    systemctl enable "$service" >/dev/null 2>&1 || true
+    systemctl restart "$service" >/dev/null 2>&1 || true
+  fi
+}
 
 ensure_group cowrie 1001
 ensure_user cowrie 1001 cowrie /home/cowrie /usr/sbin/nologin
@@ -94,8 +104,20 @@ if [[ -f /var/ossec/etc/ossec.conf ]]; then
 fi
 
 systemctl daemon-reload
-systemctl enable cowrie maltrail-sensor maltrail-server mitmproxy opencanary suricata wazuh-agent
-systemctl restart cowrie maltrail-sensor maltrail-server mitmproxy opencanary suricata wazuh-agent
+
+for service in \
+  cowrie \
+  maltrail-sensor \
+  maltrail-server \
+  mitmproxy \
+  monitoring-sensor-compose \
+  monitoring-sensor-firewall \
+  opencanary \
+  suricata \
+  wazuh-agent
+do
+  enable_and_restart_if_present "$service"
+done
 
 echo "Sensor VM restore completed."
 echo "Verify services with: systemctl --no-pager --type=service --state=running"

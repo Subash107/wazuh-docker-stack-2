@@ -1,6 +1,8 @@
 # Local environment and secrets
 .env
 wazuh-docker-stack/.env
+wazuh-docker-stack/secrets/*
+!wazuh-docker-stack/secrets/README.md
 wazuh-docker-stack/multi-node/config/wazuh_dashboard/wazuh.yml
 wazuh-docker-stack/single-node/config/wazuh_dashboard/wazuh.yml
 wazuh-docker-stack/build-docker-images/wazuh-indexer/config/internal_users.yml
@@ -25,6 +27,7 @@ logs/host/*
 !logs/host/.gitkeep
 logs/deployments/*
 !logs/deployments/.gitkeep
+logs/rebuild-drills/
 *.log
 __pycache__/
 *.pyc
@@ -34,7 +37,17 @@ archives/
 projects/reference/
 wazuh-docker-stack/single-node/recovery-bundle/backups/
 wazuh-docker-stack/single-node/recovery-bundle/offline-archive/
-wazuh-docker-stack/single-node/recovery-bundle/blueprints/
+wazuh-docker-stack/single-node/recovery-bundle/blueprints/*
+!wazuh-docker-stack/single-node/recovery-bundle/blueprints/monitoring-host/
+!wazuh-docker-stack/single-node/recovery-bundle/blueprints/monitoring-host/**
+!wazuh-docker-stack/single-node/recovery-bundle/blueprints/sensor-vm/
+!wazuh-docker-stack/single-node/recovery-bundle/blueprints/sensor-vm/**
+wazuh-docker-stack/single-node/recovery-bundle/blueprints/monitoring-host/wazuh-single-node/config/wazuh_dashboard/wazuh.yml
+wazuh-docker-stack/single-node/recovery-bundle/blueprints/monitoring-host/wazuh-single-node/config/wazuh_indexer/internal_users.yml
+wazuh-docker-stack/single-node/recovery-bundle/blueprints/monitoring-host/wazuh-single-node/config/wazuh_indexer_ssl_certs/**
+!wazuh-docker-stack/single-node/recovery-bundle/blueprints/monitoring-host/wazuh-single-node/config/wazuh_indexer_ssl_certs/README.md
+wazuh-docker-stack/single-node/recovery-bundle/blueprints/**/__pycache__/
+wazuh-docker-stack/single-node/recovery-bundle/blueprints/**/*.pyc
 wazuh-docker-stack/single-node/recovery-bundle/logs/
 wazuh-docker-stack/single-node/.bundle_stamp
 *.zip
@@ -44,6 +57,9 @@ wazuh-docker-stack/single-node/.bundle_stamp
 Sysmon/
 media/assets/
 soc-stack/
+local/operator-private/
+local/gateway/
+local/secret-vault/
 
 # Editor and assistant local state
 .claude/

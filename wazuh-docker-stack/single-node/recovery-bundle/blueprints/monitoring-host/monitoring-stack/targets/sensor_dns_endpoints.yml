@@ -1,0 +1,7 @@
+- targets:
+    - 192.168.1.6:53
+  labels:
+    probe_group: sensor_dns
+    service_name: pihole_dns
+    dashboard_name: pihole
+    host_name: sensor_vm

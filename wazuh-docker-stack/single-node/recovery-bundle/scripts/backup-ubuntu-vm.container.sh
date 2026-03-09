@@ -17,19 +17,14 @@ ssh_base() {
     "$SSH_USER@$VM_ADDRESS" "$@"
 }
 
-archive_cmd="printf '%s\n' '$SUDO_PASSWORD' | sudo -S -p '' tar --numeric-owner -C / -czf - \
-home/cowrie/cowrie \
-opt/maltrail \
-opt/opencanary \
-etc/opencanaryd \
+archive_cmd="printf '%s\n' '$SUDO_PASSWORD' | sudo -S -p '' tar --ignore-failed-read --numeric-owner -C / -czf - \
+opt/monitoring-sensor \
 etc/suricata \
-etc/maltrail \
+etc/default/monitoring-sensor \
 var/ossec \
-etc/systemd/system/cowrie.service \
-etc/systemd/system/maltrail-sensor.service \
-etc/systemd/system/maltrail-server.service \
-etc/systemd/system/mitmproxy.service \
-etc/systemd/system/opencanary.service \
+etc/systemd/system/monitoring-sensor-compose.service \
+etc/systemd/system/monitoring-sensor-firewall.service \
+usr/local/lib/monitoring-sensor \
 usr/lib/systemd/system/suricata.service \
 usr/lib/systemd/system/wazuh-agent.service \
 etc/ssh/sshd_config \
@@ -37,8 +32,8 @@ etc/ssh/sshd_config.d"
 
 ssh_base "$archive_cmd" > "/backup/$BACKUP_ARCHIVE_NAME"
 
-services_cmd="printf '%s\n' '$SUDO_PASSWORD' | sudo -S -p '' bash -lc 'hostnamectl; echo; systemctl show cowrie.service maltrail-sensor.service maltrail-server.service mitmproxy.service opencanary.service suricata.service wazuh-agent.service --property=FragmentPath --property=ExecStart --property=User; echo; systemctl --no-pager --type=service --state=running'"
-packages_cmd="printf '%s\n' '$SUDO_PASSWORD' | sudo -S -p '' bash -lc 'id cowrie; id maltrail; id opencanary; id wazuh; echo; dpkg -l | egrep \"suricata|mitmproxy|wazuh-agent|docker|python3-venv|python3-pip\"; echo; du -sh /home/cowrie/cowrie /opt/maltrail /opt/opencanary /etc/opencanaryd /etc/suricata /etc/maltrail /var/ossec'"
+services_cmd="printf '%s\n' '$SUDO_PASSWORD' | sudo -S -p '' bash -lc 'hostnamectl; echo; for svc in docker.service monitoring-sensor-compose.service monitoring-sensor-firewall.service suricata.service wazuh-agent.service; do systemctl show \"$svc\" --property=FragmentPath --property=ExecStart --property=User 2>/dev/null || true; done; echo; systemctl --no-pager --type=service --state=running'"
+packages_cmd="printf '%s\n' '$SUDO_PASSWORD' | sudo -S -p '' bash -lc 'id wazuh 2>/dev/null || true; echo; dpkg -l | egrep \"suricata|wazuh-agent|docker|docker-compose-plugin|python3\"; echo; du -sh /opt/monitoring-sensor /etc/suricata /var/ossec 2>/dev/null || true'"
 docker_cmd="printf '%s\n' '$SUDO_PASSWORD' | sudo -S -p '' bash -lc 'if command -v docker >/dev/null 2>&1; then docker ps --format \"{{.Names}} {{.Image}} {{.Ports}}\"; echo; docker inspect pihole --format \"{{json .Mounts}}\" 2>/dev/null || true; else echo \"docker command not present on sensor VM\"; fi'"
 
 ssh_base "$services_cmd" > /meta/ubuntu-vm-services.txt

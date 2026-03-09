@@ -4,8 +4,8 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$VmAddress,
     [string]$VmUser = "subash",
-    [string]$VmPassword = $env:VM_SSH_PASSWORD,
-    [string]$SudoPassword = $env:VM_SUDO_PASSWORD,
+    [string]$VmPassword = "",
+    [string]$SudoPassword = "",
     [string]$TargetRoot = "D:\Monitoring",
     [string]$BundleStamp,
     [string]$ArchivePath,
@@ -14,15 +14,56 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-if ([string]::IsNullOrWhiteSpace($VmPassword) -or [string]::IsNullOrWhiteSpace($SudoPassword)) {
-    throw "Set VM_SSH_PASSWORD and VM_SUDO_PASSWORD in the environment, or pass -VmPassword and -SudoPassword."
+function Get-SecretValue {
+    param(
+        [string]$FilePath,
+        [string]$EnvironmentName
+    )
+
+    if (Test-Path $FilePath) {
+        return (Get-Content -Path $FilePath -Raw -Encoding UTF8).Trim()
+    }
+
+    $envValue = [Environment]::GetEnvironmentVariable($EnvironmentName)
+    if (-not [string]::IsNullOrWhiteSpace($envValue)) {
+        return $envValue.Trim()
+    }
+
+    return ""
 }
 
 $scriptRoot = $PSScriptRoot
 $bundleRoot = Split-Path $scriptRoot -Parent
+$sourceMonitoringRoot = (Resolve-Path (Join-Path $bundleRoot "..\..\..")).Path
 $backupSensorRoot = Join-Path $bundleRoot "backups\sensor-vm"
 $containerScript = Join-Path $scriptRoot "deploy-sensor-vm.container.sh"
 $hostDeployScript = Join-Path $scriptRoot "deploy-monitoring-host.ps1"
+
+if ([string]::IsNullOrWhiteSpace($VmPassword)) {
+    foreach ($candidate in @(
+        (Join-Path $TargetRoot "secrets\vm_ssh_password.txt"),
+        (Join-Path $sourceMonitoringRoot "secrets\vm_ssh_password.txt")
+    )) {
+        $VmPassword = Get-SecretValue -FilePath $candidate -EnvironmentName "VM_SSH_PASSWORD"
+        if (-not [string]::IsNullOrWhiteSpace($VmPassword)) {
+            break
+        }
+    }
+}
+if ([string]::IsNullOrWhiteSpace($SudoPassword)) {
+    foreach ($candidate in @(
+        (Join-Path $TargetRoot "secrets\vm_sudo_password.txt"),
+        (Join-Path $sourceMonitoringRoot "secrets\vm_sudo_password.txt")
+    )) {
+        $SudoPassword = Get-SecretValue -FilePath $candidate -EnvironmentName "VM_SUDO_PASSWORD"
+        if (-not [string]::IsNullOrWhiteSpace($SudoPassword)) {
+            break
+        }
+    }
+}
+if ([string]::IsNullOrWhiteSpace($VmPassword) -or [string]::IsNullOrWhiteSpace($SudoPassword)) {
+    throw "Populate $TargetRoot\secrets\vm_ssh_password.txt and vm_sudo_password.txt, set the matching environment variables, or pass -VmPassword and -SudoPassword."
+}
 
 if (-not $ArchivePath) {
     $latestArchive = Get-ChildItem $backupSensorRoot -Filter "*.tgz" |

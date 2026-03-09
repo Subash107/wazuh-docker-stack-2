@@ -1,0 +1,176 @@
+{
+  "title": "Monitoring Control Room",
+  "services": [
+    {
+      "id": "service-index",
+      "name": "Service Index",
+      "group": "operator",
+      "url": "http://192.168.1.3:9088",
+      "username": "none",
+      "password_source": "none",
+      "notes": "Internal service links, docs, and health portal.",
+      "check": {
+        "type": "http",
+        "target": "http://127.0.0.1:9088/healthz",
+        "allowed_statuses": [200]
+      }
+    },
+    {
+      "id": "wazuh-dashboard",
+      "name": "Wazuh Dashboard",
+      "group": "monitoring",
+      "url": "http://192.168.1.3:5601",
+      "username": "admin",
+      "password_source": "local-only wazuh-docker-stack/secrets/indexer_password.txt",
+      "notes": "Primary SOC dashboard.",
+      "check": {
+        "type": "http",
+        "target": "http://192.168.1.3:5601",
+        "allowed_statuses": [200, 302, 401]
+      }
+    },
+    {
+      "id": "prometheus",
+      "name": "Prometheus",
+      "group": "monitoring",
+      "url": "http://192.168.1.3:9090",
+      "username": "none",
+      "password_source": "none",
+      "notes": "Metrics, probes, and alert rules.",
+      "check": {
+        "type": "http",
+        "target": "http://prometheus:9090/-/healthy",
+        "allowed_statuses": [200]
+      }
+    },
+    {
+      "id": "alertmanager",
+      "name": "Alertmanager",
+      "group": "monitoring",
+      "url": "http://192.168.1.3:9093",
+      "username": "none",
+      "password_source": "none",
+      "notes": "Alert routing and delivery status.",
+      "check": {
+        "type": "http",
+        "target": "http://alertmanager:9093/-/healthy",
+        "allowed_statuses": [200]
+      }
+    },
+    {
+      "id": "blackbox-exporter",
+      "name": "Blackbox Exporter",
+      "group": "monitoring",
+      "url": "http://192.168.1.3:9115/metrics",
+      "username": "none",
+      "password_source": "none",
+      "notes": "Probe exporter for ICMP, HTTP, TCP, and DNS checks.",
+      "check": {
+        "type": "http",
+        "target": "http://blackbox-exporter:9115/metrics",
+        "allowed_statuses": [200]
+      }
+    },
+    {
+      "id": "wazuh-api",
+      "name": "Wazuh API",
+      "group": "monitoring",
+      "url": "https://192.168.1.3:55000",
+      "username": "wazuh-wui",
+      "password_source": "local-only wazuh-docker-stack/secrets/api_password.txt",
+      "notes": "Agent and manager API endpoint.",
+      "check": {
+        "type": "http",
+        "target": "https://192.168.1.3:55000",
+        "allowed_statuses": [200, 401],
+        "skip_tls_verify": true
+      }
+    },
+    {
+      "id": "wazuh-indexer",
+      "name": "Wazuh Indexer",
+      "group": "monitoring",
+      "url": "https://192.168.1.3:9200",
+      "username": "admin",
+      "password_source": "local-only wazuh-docker-stack/secrets/indexer_password.txt",
+      "notes": "Indexer and search backend.",
+      "check": {
+        "type": "http",
+        "target": "https://192.168.1.3:9200",
+        "allowed_statuses": [200, 401],
+        "skip_tls_verify": true
+      }
+    },
+    {
+      "id": "pihole-admin",
+      "name": "Pi-hole Admin",
+      "group": "sensor",
+      "url": "http://192.168.1.6:8080/admin/login",
+      "username": "none",
+      "password_source": "local-only secrets/pihole_web_password.txt",
+      "notes": "DNS dashboard and query log.",
+      "check": {
+        "type": "http",
+        "target": "http://192.168.1.6:8080/admin/login",
+        "allowed_statuses": [200]
+      }
+    },
+    {
+      "id": "pihole-dns",
+      "name": "Pi-hole DNS",
+      "group": "sensor",
+      "url": "192.168.1.6:53",
+      "username": "none",
+      "password_source": "none",
+      "notes": "LAN DNS filtering listener.",
+      "check": {
+        "type": "dns",
+        "server": "192.168.1.6",
+        "port": 53,
+        "query_name": "example.com"
+      }
+    },
+    {
+      "id": "mitmproxy-ui",
+      "name": "mitmproxy Web UI",
+      "group": "sensor",
+      "url": "http://192.168.1.6:8083/#/flows",
+      "username": "none",
+      "password_source": "none",
+      "notes": "Flow browser for proxy traffic.",
+      "check": {
+        "type": "http",
+        "target": "http://192.168.1.6:8083/",
+        "allowed_statuses": [200]
+      }
+    },
+    {
+      "id": "mitmproxy-proxy",
+      "name": "mitmproxy Proxy",
+      "group": "sensor",
+      "url": "192.168.1.6:8082",
+      "username": "none",
+      "password_source": "none",
+      "notes": "Transparent proxy listener.",
+      "check": {
+        "type": "tcp",
+        "host": "192.168.1.6",
+        "port": 8082
+      }
+    },
+    {
+      "id": "sensor-ssh",
+      "name": "Ubuntu Sensor SSH",
+      "group": "sensor",
+      "url": "ssh subash@192.168.1.6",
+      "username": "subash",
+      "password_source": "local-only secrets/vm_ssh_password.txt",
+      "notes": "Sensor administration shell access.",
+      "check": {
+        "type": "tcp",
+        "host": "192.168.1.6",
+        "port": 22
+      }
+    }
+  ]
+}

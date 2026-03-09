@@ -1,0 +1,14 @@
+[Unit]
+Description=LAN-only firewall guard for monitoring sensor ports
+After=docker.service monitoring-sensor-compose.service
+Requires=docker.service
+Wants=monitoring-sensor-compose.service
+
+[Service]
+Type=oneshot
+EnvironmentFile=-/etc/default/monitoring-sensor
+ExecStart=/usr/local/lib/monitoring-sensor/firewall.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

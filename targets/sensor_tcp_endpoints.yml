@@ -1,0 +1,7 @@
+- targets:
+    - 192.168.1.6:8082
+  labels:
+    probe_group: sensor_tcp
+    service_name: mitmproxy_proxy
+    dashboard_name: mitmproxy
+    host_name: sensor_vm
