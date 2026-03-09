@@ -9,10 +9,23 @@ if [[ ! -f "$repo_root/.env.example" ]]; then
   exit 1
 fi
 
-set -a
-# shellcheck disable=SC1090
-. "$repo_root/.env.example"
-set +a
+load_env_file() {
+  local env_file="$1"
+  local line key value
+
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    line="${line%$'\r'}"
+
+    [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]] && continue
+    [[ "$line" != *=* ]] && continue
+
+    key="${line%%=*}"
+    value="${line#*=}"
+    export "$key=$value"
+  done < "$env_file"
+}
+
+load_env_file "$repo_root/.env.example"
 
 created_files=()
 
