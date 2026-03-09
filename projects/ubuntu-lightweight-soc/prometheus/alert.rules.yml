@@ -1,0 +1,29 @@
+groups:
+  - name: ubuntu_lightweight_soc
+    rules:
+      - alert: SocSuricataCriticalAlerts
+        expr: sum(soc_suricata_severity_events{severity="1"}) > 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: Suricata reported one or more critical alerts
+          description: Review the recent high-severity Suricata detections in Grafana and Wazuh.
+
+      - alert: SocCowrieBruteForceBurst
+        expr: max(soc_cowrie_login_failed_events) >= 5
+        for: 2m
+        labels:
+          severity: high
+        annotations:
+          summary: Repeated Cowrie login failures detected
+          description: A single attacking IP exceeded the Cowrie brute-force threshold.
+
+      - alert: SocThreatIntelIndicatorMatched
+        expr: sum(soc_opencti_indicator_matches) > 0
+        for: 1m
+        labels:
+          severity: high
+        annotations:
+          summary: Threat intelligence indicator matched
+          description: One or more local telemetry events matched an OpenCTI-derived IOC.

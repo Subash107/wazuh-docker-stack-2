@@ -14,6 +14,7 @@ Options:
   --lan-cidr CIDR               LAN CIDR allowed to reach the sensor ports.
   --tz TIMEZONE                 Service timezone. Default: UTC
   --pihole-web-password VALUE   Required for the full profile.
+  --mitmproxy-web-password VALUE Required for the full profile.
   --pihole-upstream-dns VALUE   Upstream DNS for Pi-hole. Default: 192.168.1.1
   --pihole-web-port PORT        Pi-hole admin port. Default: 8080
   --mitmproxy-proxy-port PORT   mitmproxy proxy port. Default: 8082
@@ -72,6 +73,7 @@ ensure_compose_env() {
   cat > "$env_path" <<EOF
 TZ=$TZ
 PIHOLE_WEBPASSWORD=$PIHOLE_WEBPASSWORD
+MITMPROXY_WEBPASSWORD=$MITMPROXY_WEBPASSWORD
 PIHOLE_UPSTREAM_DNS=$PIHOLE_UPSTREAM_DNS
 PIHOLE_WEB_PORT=$PIHOLE_WEB_PORT
 MITMPROXY_PROXY_PORT=$MITMPROXY_PROXY_PORT
@@ -196,6 +198,7 @@ SENSOR_IP="${SENSOR_IP:-192.168.1.6}"
 LAN_CIDR="${LAN_CIDR:-192.168.1.0/24}"
 TZ="${TZ:-UTC}"
 PIHOLE_WEBPASSWORD="${PIHOLE_WEBPASSWORD:-}"
+MITMPROXY_WEBPASSWORD="${MITMPROXY_WEBPASSWORD:-}"
 PIHOLE_UPSTREAM_DNS="${PIHOLE_UPSTREAM_DNS:-192.168.1.1}"
 PIHOLE_WEB_PORT="${PIHOLE_WEB_PORT:-8080}"
 MITMPROXY_PROXY_PORT="${MITMPROXY_PROXY_PORT:-8082}"
@@ -237,6 +240,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --pihole-web-password)
       PIHOLE_WEBPASSWORD="$2"
+      shift 2
+      ;;
+    --mitmproxy-web-password)
+      MITMPROXY_WEBPASSWORD="$2"
       shift 2
       ;;
     --pihole-upstream-dns)
@@ -289,6 +296,11 @@ fi
 
 if [[ "$INSTALL_PROFILE" == "full" && -z "$PIHOLE_WEBPASSWORD" ]]; then
   echo "PIHOLE_WEBPASSWORD is required for the full profile." >&2
+  exit 1
+fi
+
+if [[ "$INSTALL_PROFILE" == "full" && -z "$MITMPROXY_WEBPASSWORD" ]]; then
+  echo "MITMPROXY_WEBPASSWORD is required for the full profile." >&2
   exit 1
 fi
 

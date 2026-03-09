@@ -26,9 +26,12 @@ PDF_ROOT = REPO_ROOT / "docs" / "pdf-handbook"
 WAZUH_INDEXER_PASSWORD_PATH = WAZUH_SECRET_ROOT / "indexer_password.txt"
 WAZUH_API_PASSWORD_PATH = WAZUH_SECRET_ROOT / "api_password.txt"
 WAZUH_DASHBOARD_PASSWORD_PATH = WAZUH_SECRET_ROOT / "dashboard_password.txt"
+GRAFANA_ADMIN_USERNAME_PATH = HOST_SECRET_ROOT / "grafana_admin_username.txt"
+GRAFANA_ADMIN_PASSWORD_PATH = HOST_SECRET_ROOT / "grafana_admin_password.txt"
 VM_SSH_PASSWORD_PATH = HOST_SECRET_ROOT / "vm_ssh_password.txt"
 VM_SUDO_PASSWORD_PATH = HOST_SECRET_ROOT / "vm_sudo_password.txt"
 PIHOLE_WEB_PASSWORD_PATH = HOST_SECRET_ROOT / "pihole_web_password.txt"
+MITMPROXY_WEB_PASSWORD_PATH = HOST_SECRET_ROOT / "mitmproxy_web_password.txt"
 
 
 def parse_env_file(path):
@@ -640,6 +643,11 @@ def main():
         override_value=overrides.get("pihole_password"),
         env_name="PIHOLE_WEBPASSWORD",
     )
+    mitmproxy_password, mitmproxy_password_source = resolve_secret(
+        MITMPROXY_WEB_PASSWORD_PATH,
+        override_value=overrides.get("mitmproxy_password"),
+        env_name="MITMPROXY_WEBPASSWORD",
+    )
     sensor_ssh_password, sensor_ssh_password_source = resolve_secret(
         VM_SSH_PASSWORD_PATH,
         override_value=overrides.get("sensor_ssh_password"),
@@ -678,6 +686,17 @@ def main():
     smtp_from = extract_yaml_scalar(alertmanager_text, "smtp_from")
     smtp_smarthost = extract_yaml_scalar(alertmanager_text, "smtp_smarthost")
     stack_email_to = extract_yaml_scalar(alertmanager_text, "to")
+    grafana_username, grafana_username_source = resolve_secret(
+        GRAFANA_ADMIN_USERNAME_PATH,
+        override_value=overrides.get("grafana_username"),
+        legacy_value="admin",
+        legacy_label="default Grafana admin username",
+    )
+    grafana_password, grafana_password_source = resolve_secret(
+        GRAFANA_ADMIN_PASSWORD_PATH,
+        override_value=overrides.get("grafana_password"),
+        env_name="GRAFANA_ADMIN_PASSWORD",
+    )
 
     machine_name = prefer(
         os.getenv("OPERATOR_MACHINE_NAME"),
@@ -711,6 +730,14 @@ def main():
                 "none",
                 "",
                 "none",
+            ),
+            build_service_entry(
+                "grafana",
+                service_map,
+                grafana_username or "admin",
+                grafana_password,
+                build_source_label(grafana_password, grafana_password_source),
+                f"Admin username source: {grafana_username_source}",
             ),
             build_service_entry(
                 "alertmanager",
@@ -758,8 +785,8 @@ def main():
                 "mitmproxy-ui",
                 service_map,
                 "none",
-                "",
-                "none",
+                mitmproxy_password,
+                build_source_label(mitmproxy_password, mitmproxy_password_source),
             ),
             build_service_entry(
                 "mitmproxy-proxy",

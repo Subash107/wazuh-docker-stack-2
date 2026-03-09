@@ -10,6 +10,7 @@ param(
     [ValidateSet("full", "agent-only")]
     [string]$InstallProfile = "full",
     [string]$PiHoleWebPassword = "",
+    [string]$MitmproxyWebPassword = "",
     [string]$PiHoleUpstreamDns = "192.168.1.1",
     [string]$LanCidr = "192.168.1.0/24",
     [string]$SensorIp = "",
@@ -121,6 +122,9 @@ if ([string]::IsNullOrWhiteSpace($SudoPassword)) {
 if ([string]::IsNullOrWhiteSpace($PiHoleWebPassword)) {
     $PiHoleWebPassword = Get-SecretValue -FilePath (Join-Path $monitoringRoot "secrets\pihole_web_password.txt") -EnvironmentName "PIHOLE_WEBPASSWORD"
 }
+if ([string]::IsNullOrWhiteSpace($MitmproxyWebPassword)) {
+    $MitmproxyWebPassword = Get-SecretValue -FilePath (Join-Path $monitoringRoot "secrets\mitmproxy_web_password.txt") -EnvironmentName "MITMPROXY_WEBPASSWORD"
+}
 
 if (-not (Test-Path $blueprintRoot)) {
     throw "Sensor blueprint directory was not found: $blueprintRoot"
@@ -144,6 +148,9 @@ if (-not $SudoPassword -and $VmPassword) {
 
 if ($InstallProfile -eq "full" -and [string]::IsNullOrWhiteSpace($PiHoleWebPassword)) {
     throw "Pi-hole web password is required for the full sensor profile."
+}
+if ($InstallProfile -eq "full" -and [string]::IsNullOrWhiteSpace($MitmproxyWebPassword)) {
+    throw "mitmproxy web password is required for the full sensor profile."
 }
 
 if ([string]::IsNullOrWhiteSpace($SudoPassword)) {
@@ -179,6 +186,7 @@ try {
         "LAN_CIDR=" + (ConvertTo-ShellLiteral $LanCidr),
         "TZ=" + (ConvertTo-ShellLiteral $TimeZone),
         "PIHOLE_WEBPASSWORD=" + (ConvertTo-ShellLiteral $PiHoleWebPassword),
+        "MITMPROXY_WEBPASSWORD=" + (ConvertTo-ShellLiteral $MitmproxyWebPassword),
         "PIHOLE_UPSTREAM_DNS=" + (ConvertTo-ShellLiteral $PiHoleUpstreamDns),
         "PIHOLE_WEB_PORT=" + (ConvertTo-ShellLiteral "$PiHoleWebPort"),
         "MITMPROXY_PROXY_PORT=" + (ConvertTo-ShellLiteral "$MitmproxyProxyPort"),
@@ -209,6 +217,7 @@ printf '%s\n' "$SUDO_PASSWORD" | sudo -S -p '' env \
   LAN_CIDR="$LAN_CIDR" \
   TZ="$TZ" \
   PIHOLE_WEBPASSWORD="$PIHOLE_WEBPASSWORD" \
+  MITMPROXY_WEBPASSWORD="$MITMPROXY_WEBPASSWORD" \
   PIHOLE_UPSTREAM_DNS="$PIHOLE_UPSTREAM_DNS" \
   PIHOLE_WEB_PORT="$PIHOLE_WEB_PORT" \
   MITMPROXY_PROXY_PORT="$MITMPROXY_PROXY_PORT" \

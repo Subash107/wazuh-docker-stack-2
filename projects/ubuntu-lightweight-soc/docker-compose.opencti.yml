@@ -1,0 +1,104 @@
+services:
+  opencti-redis:
+    image: redis:8.6.1
+    container_name: soc-opencti-redis
+    restart: unless-stopped
+    mem_limit: ${OPENCTI_REDIS_MEMORY_LIMIT:-128m}
+    networks:
+      - soc
+
+  opencti-rabbitmq:
+    image: rabbitmq:4.2-management
+    container_name: soc-opencti-rabbitmq
+    restart: unless-stopped
+    mem_limit: ${OPENCTI_RABBITMQ_MEMORY_LIMIT:-256m}
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+    networks:
+      - soc
+
+  opencti-minio:
+    image: minio/minio:latest
+    container_name: soc-opencti-minio
+    restart: unless-stopped
+    mem_limit: ${OPENCTI_MINIO_MEMORY_LIMIT:-256m}
+    command: server /data
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    volumes:
+      - soc-opencti-minio-data:/data
+    networks:
+      - soc
+
+  opencti-elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.19.12
+    container_name: soc-opencti-elasticsearch
+    restart: unless-stopped
+    mem_limit: ${OPENCTI_ELASTIC_MEMORY_LIMIT:-768m}
+    environment:
+      discovery.type: single-node
+      xpack.ml.enabled: "false"
+      xpack.security.enabled: "false"
+      ES_JAVA_OPTS: -Xms${ELASTIC_MEMORY_SIZE:-512m} -Xmx${ELASTIC_MEMORY_SIZE:-512m}
+    volumes:
+      - soc-opencti-es-data:/usr/share/elasticsearch/data
+    networks:
+      - soc
+
+  opencti:
+    image: opencti/platform:latest
+    container_name: soc-opencti
+    restart: unless-stopped
+    mem_limit: ${OPENCTI_MEMORY_LIMIT:-768m}
+    environment:
+      NODE_OPTIONS: --max-old-space-size=${OPENCTI_NODE_HEAP_MB:-384}
+      APP__PORT: 8080
+      APP__BASE_URL: ${OPENCTI_EXTERNAL_SCHEME:-http}://localhost:${OPENCTI_PORT:-8080}
+      APP__ADMIN__EMAIL: ${OPENCTI_ADMIN_EMAIL}
+      APP__ADMIN__PASSWORD: ${OPENCTI_ADMIN_PASSWORD}
+      APP__ADMIN__TOKEN: ${OPENCTI_ADMIN_TOKEN}
+      APP__ENCRYPTION_KEY: ${OPENCTI_ENCRYPTION_KEY}
+      APP__HEALTH_ACCESS_KEY: ${OPENCTI_HEALTHCHECK_ACCESS_KEY}
+      REDIS__HOSTNAME: opencti-redis
+      REDIS__PORT: 6379
+      ELASTICSEARCH__URL: http://opencti-elasticsearch:9200
+      ELASTICSEARCH__NUMBER_OF_REPLICAS: 0
+      MINIO__ENDPOINT: opencti-minio
+      MINIO__PORT: 9000
+      MINIO__USE_SSL: "false"
+      MINIO__ACCESS_KEY: ${MINIO_ROOT_USER}
+      MINIO__SECRET_KEY: ${MINIO_ROOT_PASSWORD}
+      RABBITMQ__HOSTNAME: opencti-rabbitmq
+      RABBITMQ__PORT: 5672
+      RABBITMQ__PORT_MANAGEMENT: 15672
+      RABBITMQ__MANAGEMENT_SSL: "false"
+      RABBITMQ__USERNAME: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ__PASSWORD: ${RABBITMQ_DEFAULT_PASS}
+    ports:
+      - "${OPENCTI_PORT:-8080}:8080"
+    networks:
+      - soc
+    depends_on:
+      - opencti-redis
+      - opencti-rabbitmq
+      - opencti-minio
+      - opencti-elasticsearch
+
+  opencti-worker:
+    image: opencti/worker:latest
+    container_name: soc-opencti-worker
+    restart: unless-stopped
+    mem_limit: ${OPENCTI_WORKER_MEMORY_LIMIT:-512m}
+    environment:
+      OPENCTI_URL: http://opencti:8080
+      OPENCTI_TOKEN: ${OPENCTI_ADMIN_TOKEN}
+    networks:
+      - soc
+    depends_on:
+      - opencti
+
+volumes:
+  soc-opencti-es-data:
+  soc-opencti-minio-data:

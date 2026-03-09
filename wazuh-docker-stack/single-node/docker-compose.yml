@@ -42,6 +42,8 @@ services:
 
       # ossec.conf mount
       - ./config/wazuh_cluster/wazuh_manager.conf:/wazuh-config-mount/etc/ossec.conf:ro
+      - ./config/wazuh_cluster/rules/local_rules.xml:/var/ossec/etc/rules/local_rules.xml:ro
+      - ./config/wazuh_cluster/lists:/var/ossec/etc/lists:ro
 
   wazuh-indexer:
     image: wazuh/wazuh-indexer@sha256:e80791634b95236fbfcf1de0b929c979a8a4f4e8d85b7fbdc876fe9ec6a206d8

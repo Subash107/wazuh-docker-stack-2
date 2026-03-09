@@ -59,6 +59,11 @@
     <location>/var/log/suricata/eve.json</location>
   </localfile>
 
+  <localfile>
+    <log_format>json</log_format>
+    <location>/opt/cowrie/var/log/cowrie/cowrie.json</location>
+  </localfile>
+
   <syscheck>
     <disabled>no</disabled>
     <directories check_all="yes" report_changes="yes" realtime="yes">/etc</directories>

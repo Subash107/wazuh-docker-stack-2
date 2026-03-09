@@ -8,9 +8,12 @@ Store local-only runtime secrets here, for example:
 - `gateway_admin_username.txt`
 - `gateway_admin_password.txt`
 - `gateway_admin_password_hash.txt`
+- `grafana_admin_username.txt`
+- `grafana_admin_password.txt`
 - `vm_ssh_password.txt`
 - `vm_sudo_password.txt`
 - `pihole_web_password.txt`
+- `mitmproxy_web_password.txt`
 
 Do not commit real credentials.
 

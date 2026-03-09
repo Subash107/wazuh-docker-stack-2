@@ -10,6 +10,7 @@ param(
     [ValidateSet("full", "agent-only")]
     [string]$InstallProfile = "full",
     [string]$PiHoleWebPassword = "",
+    [string]$MitmproxyWebPassword = "",
     [string]$PiHoleUpstreamDns = "192.168.1.1",
     [string]$LanCidr = "192.168.1.0/24",
     [string]$SensorIp = "",
@@ -54,6 +55,9 @@ if ([string]::IsNullOrWhiteSpace($SudoPassword)) {
 if ([string]::IsNullOrWhiteSpace($PiHoleWebPassword)) {
     $PiHoleWebPassword = Get-SecretValue -FilePath (Join-Path $projectRoot "secrets\pihole_web_password.txt") -EnvironmentName "PIHOLE_WEBPASSWORD"
 }
+if ([string]::IsNullOrWhiteSpace($MitmproxyWebPassword)) {
+    $MitmproxyWebPassword = Get-SecretValue -FilePath (Join-Path $projectRoot "secrets\mitmproxy_web_password.txt") -EnvironmentName "MITMPROXY_WEBPASSWORD"
+}
 
 $recoveryBundleRoot = Join-Path (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path "wazuh-docker-stack\single-node\recovery-bundle"
 $deployScript = Join-Path $recoveryBundleRoot "scripts\deploy-sensor-vm.ps1"
@@ -71,6 +75,7 @@ if (-not (Test-Path $deployScript)) {
     -SudoPassword $SudoPassword `
     -InstallProfile $InstallProfile `
     -PiHoleWebPassword $PiHoleWebPassword `
+    -MitmproxyWebPassword $MitmproxyWebPassword `
     -PiHoleUpstreamDns $PiHoleUpstreamDns `
     -LanCidr $LanCidr `
     -SensorIp $SensorIp `

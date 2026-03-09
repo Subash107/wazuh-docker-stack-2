@@ -1,10 +1,11 @@
 # Monitoring Stack
 
-This repository packages a small SOC-style monitoring environment built around Wazuh, Prometheus, Alertmanager, Blackbox Exporter, and an internal service index page. It is structured for local deployment first, with the root stack handling monitoring and alert delivery while the bundled `wazuh-docker-stack/` directory provides the Wazuh platform and recovery assets.
+This repository packages a small SOC-style monitoring environment built around Wazuh, Prometheus, Grafana, Alertmanager, Blackbox Exporter, and an internal service index page. It is structured for local deployment first, with the root stack handling monitoring and alert delivery while the bundled `wazuh-docker-stack/` directory provides the Wazuh platform and recovery assets.
 
 ## What is included
 
 - Prometheus for metrics collection and alert evaluation
+- Grafana for dashboarding over the live Prometheus metrics
 - Blackbox Exporter for ICMP availability checks
 - Alertmanager for routing notifications
 - A Python-based Wazuh alert forwarder that reads Wazuh alerts and posts normalized alerts into Alertmanager
@@ -19,6 +20,7 @@ This repository packages a small SOC-style monitoring environment built around W
 |-- prometheus.yml
 |-- alert.rules.yml
 |-- alertmanager.yml
+|-- grafana/
 |-- .env.example
 |-- targets/
 |-- scripts/
@@ -59,6 +61,7 @@ The root monitoring stack expects the external Docker volume `single-node_wazuh_
 - `blackbox.yml`: Blackbox Exporter probe modules
 - `alert.rules.yml`: stack health and ICMP probe alerts
 - `alertmanager.yml`: notification routing
+- `grafana/`: provisioned datasource and monitoring dashboards
 - `targets/ping_servers.yml`: file-based ICMP target inventory
 - `targets/sensor_http_endpoints.yml`: Pi-hole and mitmproxy HTTP probe inventory
 - `targets/sensor_tcp_endpoints.yml`: mitmproxy TCP probe inventory
@@ -71,6 +74,7 @@ The root monitoring stack expects the external Docker volume `single-node_wazuh_
 - `docs/runbooks/sensor-vm-bootstrap.md`: canonical Ubuntu sensor deployment path
 - `docs/runbooks/secret-vault.md`: encrypted local secret export, import, and rekey workflow
 - `docs/runbooks/bare-metal-rebuild-drill.md`: staged clean-host rebuild rehearsal from the recovery bundle and secret vault
+- `docs/runbooks/ubuntu-lightweight-soc.md`: low-resource Ubuntu SOC profile with Suricata, Cowrie, Wazuh ingestion, and Grafana
 - `docs/reference/repository-layout.md`: folder map for source-of-truth files vs generated recovery artifacts
 - `docs/operator-handbook/README.md`: installation, troubleshooting, tools usage, access inventory, and threat monitoring guides
 - `docs/pdf-handbook/README.md`: offline PDF export set in one folder
@@ -117,6 +121,8 @@ Before deploying, create or supply these local-only inputs yourself:
 - `secrets/gateway_admin_username.txt`
 - `secrets/gateway_admin_password.txt`
 - `secrets/gateway_admin_password_hash.txt`
+- `secrets/grafana_admin_username.txt`
+- `secrets/grafana_admin_password.txt`
 - `secrets/vm_ssh_password.txt`
 - `secrets/vm_sudo_password.txt`
 - `secrets/pihole_web_password.txt`
@@ -138,6 +144,7 @@ Use `scripts/windows/Invoke-BareMetalRebuildDrill.ps1` to rehearse a clean monit
 - `wazuh-docker-stack/single-node/` is the source of truth for the live Wazuh stack.
 - `wazuh-docker-stack/single-node/recovery-bundle/blueprints/sensor-vm/` is the only tracked clean-build blueprint.
 - `wazuh-docker-stack/single-node/recovery-bundle/backups/` is the timestamped recovery history, not a second source tree.
+- `projects/ubuntu-lightweight-soc/` is the dedicated 4 GB Ubuntu SOC lab profile.
 - `local/`, `logs/`, and `archives/` hold machine-local or generated operational artifacts.
 
 ## Notes

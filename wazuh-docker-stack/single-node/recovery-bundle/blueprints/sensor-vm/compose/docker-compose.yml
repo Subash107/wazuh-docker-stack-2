@@ -36,6 +36,8 @@ services:
       - block_global=false
       - --set
       - web_open_browser=false
+      - --set
+      - web_password=${MITMPROXY_WEBPASSWORD}
     ports:
       - "${MITMPROXY_PROXY_PORT}:${MITMPROXY_PROXY_PORT}/tcp"
       - "${MITMPROXY_WEB_PORT}:${MITMPROXY_WEB_PORT}/tcp"

@@ -1,0 +1,124 @@
+services:
+  cowrie:
+    image: ${COWRIE_IMAGE}
+    container_name: soc-cowrie
+    restart: unless-stopped
+    mem_limit: ${COWRIE_MEMORY_LIMIT:-256m}
+    ports:
+      - "${COWRIE_SSH_PORT:-2222}:2222"
+    environment:
+      TZ: ${TZ:-UTC}
+    volumes:
+      - ${COWRIE_BASE_PATH:-/opt/cowrie}/etc:/cowrie/cowrie-git/etc
+      - ${COWRIE_BASE_PATH:-/opt/cowrie}/var/log/cowrie:/cowrie/cowrie-git/var/log/cowrie
+      - ${COWRIE_BASE_PATH:-/opt/cowrie}/var/lib/cowrie:/cowrie/cowrie-git/var/lib/cowrie
+    networks:
+      - soc
+
+  soc-telemetry-exporter:
+    image: ${PYTHON_IMAGE}
+    container_name: soc-telemetry-exporter
+    restart: unless-stopped
+    mem_limit: ${SOC_EXPORTER_MEMORY_LIMIT:-128m}
+    command: ["python", "/app/soc_telemetry_exporter.py"]
+    environment:
+      SOC_EXPORTER_BIND: 0.0.0.0
+      SOC_EXPORTER_PORT: ${SOC_EXPORTER_PORT:-9150}
+      SURICATA_EVE_PATH: /logs/suricata/eve.json
+      COWRIE_LOG_PATH: /logs/cowrie/cowrie.json
+      IOC_IP_LIST_PATH: /ioc/opencti-indicators-ip
+      IOC_DOMAIN_LIST_PATH: /ioc/opencti-indicators-domain
+      IOC_SHA256_LIST_PATH: /ioc/opencti-indicators-sha256
+      LOG_SAMPLE_SIZE: 4000
+    volumes:
+      - ./scripts:/app:ro
+      - ${SURICATA_EVE_PATH:-/var/log/suricata/eve.json}:/logs/suricata/eve.json:ro
+      - ${COWRIE_LOG_PATH:-/opt/cowrie/var/log/cowrie/cowrie.json}:/logs/cowrie/cowrie.json:ro
+      - ../../wazuh-docker-stack/single-node/config/wazuh_cluster/lists:/ioc:ro
+    ports:
+      - "${SOC_EXPORTER_PORT:-9150}:${SOC_EXPORTER_PORT:-9150}"
+    networks:
+      - soc
+    depends_on:
+      - cowrie
+
+  prometheus:
+    image: ${PROMETHEUS_IMAGE}
+    container_name: soc-prometheus
+    restart: unless-stopped
+    mem_limit: ${PROMETHEUS_MEMORY_LIMIT:-256m}
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=3d
+      - --storage.tsdb.path=/prometheus
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/alert.rules.yml:/etc/prometheus/alert.rules.yml:ro
+      - soc-prometheus-data:/prometheus
+    ports:
+      - "${PROMETHEUS_PORT:-9091}:9090"
+    networks:
+      - soc
+    depends_on:
+      - soc-telemetry-exporter
+      - node-exporter
+      - alertmanager
+
+  alertmanager:
+    image: ${ALERTMANAGER_IMAGE}
+    container_name: soc-alertmanager
+    restart: unless-stopped
+    mem_limit: ${ALERTMANAGER_MEMORY_LIMIT:-128m}
+    volumes:
+      - ./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    ports:
+      - "${ALERTMANAGER_PORT:-9094}:9093"
+    networks:
+      - soc
+
+  node-exporter:
+    image: ${NODE_EXPORTER_IMAGE}
+    container_name: soc-node-exporter
+    restart: unless-stopped
+    mem_limit: ${NODE_EXPORTER_MEMORY_LIMIT:-64m}
+    command:
+      - --path.procfs=/host/proc
+      - --path.sysfs=/host/sys
+      - --path.rootfs=/host
+      - --collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($|/)
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/host:ro
+    ports:
+      - "${NODE_EXPORTER_PORT:-9100}:9100"
+    networks:
+      - soc
+
+  grafana:
+    image: ${GRAFANA_IMAGE}
+    container_name: soc-grafana
+    restart: unless-stopped
+    mem_limit: ${GRAFANA_MEMORY_LIMIT:-256m}
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - soc-grafana-data:/var/lib/grafana
+    ports:
+      - "${GRAFANA_PORT:-3001}:3000"
+    networks:
+      - soc
+    depends_on:
+      - prometheus
+
+networks:
+  soc:
+    driver: bridge
+
+volumes:
+  soc-prometheus-data:
+  soc-grafana-data:

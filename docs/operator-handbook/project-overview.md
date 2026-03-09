@@ -7,7 +7,7 @@ This project runs a small SOC-style monitoring environment across two nodes:
 - a Windows monitoring host at `192.168.1.3`
 - an Ubuntu sensor VM at `192.168.1.6`
 
-The host runs Wazuh, Prometheus, Alertmanager, Blackbox Exporter, the Wazuh alert forwarder, and the service index page. The sensor VM runs Pi-hole, mitmproxy, Suricata, and the Wazuh agent.
+The host runs Wazuh, Prometheus, Grafana, Alertmanager, Blackbox Exporter, the Wazuh alert forwarder, and the service index page. The sensor VM runs Pi-hole, mitmproxy, Suricata, and the Wazuh agent.
 
 ## Current architecture
 
@@ -17,6 +17,7 @@ The host runs Wazuh, Prometheus, Alertmanager, Blackbox Exporter, the Wazuh aler
 - Wazuh API
 - Wazuh Indexer
 - Prometheus
+- Grafana
 - Alertmanager
 - Blackbox Exporter
 - Wazuh alert forwarder
@@ -35,7 +36,8 @@ The host runs Wazuh, Prometheus, Alertmanager, Blackbox Exporter, the Wazuh aler
 2. The Wazuh agent forwards security-relevant logs to the Wazuh manager.
 3. The Python forwarder normalizes Wazuh alerts and sends them to Alertmanager.
 4. Prometheus and Blackbox Exporter monitor service health and raise stack alerts.
-5. Alertmanager routes threat notifications and stack health alerts by email.
+5. Grafana visualizes the live health and probe metrics from Prometheus.
+6. Alertmanager routes threat notifications and stack health alerts by email.
 
 ## Canonical deployment model
 

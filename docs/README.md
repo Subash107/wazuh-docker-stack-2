@@ -15,6 +15,7 @@ This folder holds operator-facing documentation and reference material for the m
 - `runbooks/sensor-vm-bootstrap.md`
 - `runbooks/secret-vault.md`
 - `runbooks/bare-metal-rebuild-drill.md`
+- `runbooks/ubuntu-lightweight-soc.md`
 
 ## Reference material
 
