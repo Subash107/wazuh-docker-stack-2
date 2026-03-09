@@ -26,9 +26,14 @@ This repository packages a small SOC-style monitoring environment built around W
 |   |-- windows/
 |   `-- linux/
 |-- docs/
+|   |-- operator-handbook/
+|   |-- pdf-handbook/
 |   |-- runbooks/
 |   `-- reference/
+|-- logs/
+|-- local/
 `-- wazuh-docker-stack/
+    `-- single-node/recovery-bundle/
 ```
 
 ## How the stack is split
@@ -66,6 +71,7 @@ The root monitoring stack expects the external Docker volume `single-node_wazuh_
 - `docs/runbooks/sensor-vm-bootstrap.md`: canonical Ubuntu sensor deployment path
 - `docs/runbooks/secret-vault.md`: encrypted local secret export, import, and rekey workflow
 - `docs/runbooks/bare-metal-rebuild-drill.md`: staged clean-host rebuild rehearsal from the recovery bundle and secret vault
+- `docs/reference/repository-layout.md`: folder map for source-of-truth files vs generated recovery artifacts
 - `docs/operator-handbook/README.md`: installation, troubleshooting, tools usage, access inventory, and threat monitoring guides
 - `docs/pdf-handbook/README.md`: offline PDF export set in one folder
 - `scripts/windows/Invoke-ProjectSecretMigration.ps1`: move local secrets into gitignored secret files
@@ -125,6 +131,14 @@ The generated PDF handbook lives under `docs/pdf-handbook/` and is served by the
 Use `scripts/windows/Invoke-GatewayAccessSetup.ps1` to generate or rotate the gateway credential files locally.
 Use `scripts/windows/Invoke-SecretVaultExport.ps1` to keep an encrypted backup of the local secret state.
 Use `scripts/windows/Invoke-BareMetalRebuildDrill.ps1` to rehearse a clean monitoring-host rebuild and staged sensor recovery validation before you need a real recovery.
+
+## Troubleshooting-friendly structure
+
+- Root files and folders are the source of truth for the live monitoring host.
+- `wazuh-docker-stack/single-node/` is the source of truth for the live Wazuh stack.
+- `wazuh-docker-stack/single-node/recovery-bundle/blueprints/sensor-vm/` is the only tracked clean-build blueprint.
+- `wazuh-docker-stack/single-node/recovery-bundle/backups/` is the timestamped recovery history, not a second source tree.
+- `local/`, `logs/`, and `archives/` hold machine-local or generated operational artifacts.
 
 ## Notes
 

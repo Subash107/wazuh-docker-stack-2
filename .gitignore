@@ -38,14 +38,8 @@ projects/reference/
 wazuh-docker-stack/single-node/recovery-bundle/backups/
 wazuh-docker-stack/single-node/recovery-bundle/offline-archive/
 wazuh-docker-stack/single-node/recovery-bundle/blueprints/*
-!wazuh-docker-stack/single-node/recovery-bundle/blueprints/monitoring-host/
-!wazuh-docker-stack/single-node/recovery-bundle/blueprints/monitoring-host/**
 !wazuh-docker-stack/single-node/recovery-bundle/blueprints/sensor-vm/
 !wazuh-docker-stack/single-node/recovery-bundle/blueprints/sensor-vm/**
-wazuh-docker-stack/single-node/recovery-bundle/blueprints/monitoring-host/wazuh-single-node/config/wazuh_dashboard/wazuh.yml
-wazuh-docker-stack/single-node/recovery-bundle/blueprints/monitoring-host/wazuh-single-node/config/wazuh_indexer/internal_users.yml
-wazuh-docker-stack/single-node/recovery-bundle/blueprints/monitoring-host/wazuh-single-node/config/wazuh_indexer_ssl_certs/**
-!wazuh-docker-stack/single-node/recovery-bundle/blueprints/monitoring-host/wazuh-single-node/config/wazuh_indexer_ssl_certs/README.md
 wazuh-docker-stack/single-node/recovery-bundle/blueprints/**/__pycache__/
 wazuh-docker-stack/single-node/recovery-bundle/blueprints/**/*.pyc
 wazuh-docker-stack/single-node/recovery-bundle/logs/

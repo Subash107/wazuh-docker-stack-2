@@ -18,5 +18,6 @@ This folder holds operator-facing documentation and reference material for the m
 
 ## Reference material
 
+- `reference/repository-layout.md`
 - `reference/guides/Wazuh_Alert_Investigation_Guide.pdf`
 - `reference/training/Week_1_Bug_Bounty_Foundation.pdf`

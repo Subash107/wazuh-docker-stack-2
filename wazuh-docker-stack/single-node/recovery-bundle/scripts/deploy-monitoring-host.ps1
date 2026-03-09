@@ -47,9 +47,93 @@ function Restore-DockerVolume {
       alpine:3.20 sh -lc "mkdir -p /to && tar -C /to -xzf /backup/$archiveName"
 }
 
+function Test-MonitoringSourceRoot {
+    param([string]$Path)
+
+    return (Test-Path (Join-Path $Path "docker-compose.yml")) -and
+        (Test-Path (Join-Path $Path "scripts\windows\Invoke-MonitoringPhase1Rollout.ps1"))
+}
+
+function Test-WazuhSingleNodeSourceRoot {
+    param([string]$Path)
+
+    return (Test-Path (Join-Path $Path "docker-compose.yml")) -and
+        (Test-Path (Join-Path $Path "config\wazuh_cluster\ossec.conf"))
+}
+
+function Get-LatestBundleSnapshot {
+    param([string]$BackupRoot)
+
+    if (-not (Test-Path $BackupRoot)) {
+        return $null
+    }
+
+    return Get-ChildItem -Path $BackupRoot -Directory |
+        Sort-Object LastWriteTime -Descending |
+        Select-Object -First 1
+}
+
+function Resolve-DeploymentSources {
+    param(
+        [string]$BundleRoot,
+        [string]$BackupRoot,
+        [string]$BundleStamp,
+        [string]$CanonicalMonitoringRoot,
+        [string]$CanonicalWazuhRoot
+    )
+
+    $canonicalWazuhSingleNodeRoot = Join-Path $CanonicalWazuhRoot "single-node"
+    $legacyMonitoringRoot = Join-Path $BundleRoot "blueprints\monitoring-host\monitoring-stack"
+    $legacyWazuhRoot = Join-Path $BundleRoot "blueprints\monitoring-host\wazuh-single-node"
+
+    if (-not [string]::IsNullOrWhiteSpace($BundleStamp)) {
+        $snapshotRoot = Join-Path $BackupRoot $BundleStamp
+        $snapshotMonitoringRoot = Join-Path $snapshotRoot "monitoring-stack"
+        $snapshotWazuhRoot = Join-Path $snapshotRoot "wazuh-single-node"
+        if (-not (Test-MonitoringSourceRoot $snapshotMonitoringRoot) -or -not (Test-WazuhSingleNodeSourceRoot $snapshotWazuhRoot)) {
+            throw "Bundle stamp '$BundleStamp' does not contain a complete host snapshot under '$snapshotRoot'."
+        }
+
+        return [pscustomobject]@{
+            MonitoringSource = $snapshotMonitoringRoot
+            WazuhSource = $snapshotWazuhRoot
+            SourceType = "snapshot"
+        }
+    }
+
+    if ((Test-MonitoringSourceRoot $CanonicalMonitoringRoot) -and (Test-WazuhSingleNodeSourceRoot $canonicalWazuhSingleNodeRoot)) {
+        return [pscustomobject]@{
+            MonitoringSource = $CanonicalMonitoringRoot
+            WazuhSource = $canonicalWazuhSingleNodeRoot
+            SourceType = "canonical"
+        }
+    }
+
+    $latestSnapshot = Get-LatestBundleSnapshot -BackupRoot $BackupRoot
+    if ($latestSnapshot) {
+        $snapshotMonitoringRoot = Join-Path $latestSnapshot.FullName "monitoring-stack"
+        $snapshotWazuhRoot = Join-Path $latestSnapshot.FullName "wazuh-single-node"
+        if ((Test-MonitoringSourceRoot $snapshotMonitoringRoot) -and (Test-WazuhSingleNodeSourceRoot $snapshotWazuhRoot)) {
+            return [pscustomobject]@{
+                MonitoringSource = $snapshotMonitoringRoot
+                WazuhSource = $snapshotWazuhRoot
+                SourceType = "latest-snapshot"
+            }
+        }
+    }
+
+    if ((Test-MonitoringSourceRoot $legacyMonitoringRoot) -and (Test-WazuhSingleNodeSourceRoot $legacyWazuhRoot)) {
+        return [pscustomobject]@{
+            MonitoringSource = $legacyMonitoringRoot
+            WazuhSource = $legacyWazuhRoot
+            SourceType = "legacy-blueprint"
+        }
+    }
+
+    throw "No deployable host source was found. Use the live repository source or provide a recovery bundle with 'backups\\monitoring-host\\<stamp>'."
+}
+
 $bundleRoot = Split-Path $PSScriptRoot -Parent
-$monitoringSource = Join-Path $bundleRoot "blueprints\monitoring-host\monitoring-stack"
-$wazuhSource = Join-Path $bundleRoot "blueprints\monitoring-host\wazuh-single-node"
 $sourceMonitoringRoot = (Resolve-Path (Join-Path $bundleRoot "..\..\..")).Path
 $sourceMonitoringSecrets = Join-Path $sourceMonitoringRoot "secrets"
 $sourceWazuhRoot = (Resolve-Path (Join-Path $bundleRoot "..\..")).Path
@@ -59,6 +143,9 @@ $wazuhRootTarget = Join-Path $TargetRoot "wazuh-docker-stack"
 $wazuhSecretsTarget = Join-Path $wazuhRootTarget "secrets"
 $recoveryBundleTarget = Join-Path $wazuhTarget "recovery-bundle"
 $backupRoot = Join-Path $bundleRoot "backups\monitoring-host"
+$deploymentSources = Resolve-DeploymentSources -BundleRoot $bundleRoot -BackupRoot $backupRoot -BundleStamp $BundleStamp -CanonicalMonitoringRoot $sourceMonitoringRoot -CanonicalWazuhRoot $sourceWazuhRoot
+$monitoringSource = $deploymentSources.MonitoringSource
+$wazuhSource = $deploymentSources.WazuhSource
 
 if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
     throw "Docker is required on the target host."
@@ -156,6 +243,7 @@ if (-not $SkipStart) {
 }
 
 Write-Host "Monitoring host deployed to $TargetRoot"
+Write-Host "Host deployment source: $($deploymentSources.SourceType)"
 if ($RestoreVolumeBackups -and $BundleStamp) {
     Write-Host "Restored stateful Docker volumes from bundle stamp: $BundleStamp"
 }

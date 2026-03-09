@@ -118,35 +118,9 @@ if (Test-Path "$hostRoot\gateway") {
 }
 Copy-Tree -Source $repoRoot -Destination (Join-Path $monitoringBackup "wazuh-single-node") -ExcludeDirs @("__pycache__", "recovery-bundle")
 
-Copy-Item "$hostRoot\.env.example", "$hostRoot\README.md", "$hostRoot\docker-compose.yml", "$hostRoot\alertmanager.yml", "$hostRoot\prometheus.yml", "$hostRoot\alert.rules.yml", "$hostRoot\blackbox.yml" -Destination (Join-Path $bundleRoot "blueprints\monitoring-host\monitoring-stack") -Force
-foreach ($blueprintPath in @(
-    (Join-Path $bundleRoot "blueprints\monitoring-host\monitoring-stack\scripts"),
-    (Join-Path $bundleRoot "blueprints\monitoring-host\monitoring-stack\docs"),
-    (Join-Path $bundleRoot "blueprints\monitoring-host\monitoring-stack\targets"),
-    (Join-Path $bundleRoot "blueprints\monitoring-host\monitoring-stack\gateway"),
-    (Join-Path $bundleRoot "blueprints\monitoring-host\monitoring-stack\secrets"),
-    (Join-Path $bundleRoot "blueprints\monitoring-host\wazuh-single-node\config"),
-    (Join-Path $bundleRoot "blueprints\monitoring-host\wazuh-single-node\secrets")
-)) {
-    if (Test-Path $blueprintPath) {
-        Remove-Item -Recurse -Force $blueprintPath
-    }
-}
-Copy-Tree -Source "$hostRoot\scripts" -Destination (Join-Path $bundleRoot "blueprints\monitoring-host\monitoring-stack\scripts") -ExcludeDirs @("__pycache__")
-Copy-Tree -Source "$hostRoot\docs" -Destination (Join-Path $bundleRoot "blueprints\monitoring-host\monitoring-stack\docs") -ExcludeDirs @("__pycache__")
-Copy-Tree -Source "$hostRoot\targets" -Destination (Join-Path $bundleRoot "blueprints\monitoring-host\monitoring-stack\targets") -ExcludeDirs @("__pycache__")
-if (Test-Path "$hostRoot\gateway") {
-    Copy-Tree -Source "$hostRoot\gateway" -Destination (Join-Path $bundleRoot "blueprints\monitoring-host\monitoring-stack\gateway") -ExcludeDirs @("__pycache__")
-}
-New-Item -ItemType Directory -Force -Path (Join-Path $bundleRoot "blueprints\monitoring-host\monitoring-stack\secrets") | Out-Null
-Copy-Item "$hostRoot\secrets\README.md" -Destination (Join-Path $bundleRoot "blueprints\monitoring-host\monitoring-stack\secrets") -Force
-Copy-Item "$repoRoot\docker-compose.yml", "$repoRoot\generate-indexer-certs.yml", "$repoRoot\README.md", "$repoRoot\..\.env.example" -Destination (Join-Path $bundleRoot "blueprints\monitoring-host\wazuh-single-node") -Force
-Copy-Tree -Source "$repoRoot\config" -Destination (Join-Path $bundleRoot "blueprints\monitoring-host\wazuh-single-node\config")
-$wazuhBlueprintSecretRoot = Join-Path $bundleRoot "blueprints\monitoring-host\wazuh-single-node\secrets"
-New-Item -ItemType Directory -Force -Path $wazuhBlueprintSecretRoot | Out-Null
-Copy-Item "$repoRoot\..\secrets\README.md" -Destination $wazuhBlueprintSecretRoot -Force
-if (Test-Path "$repoRoot\config\wazuh_dashboard\wazuh.yml.example") {
-    Copy-Item "$repoRoot\config\wazuh_dashboard\wazuh.yml.example" -Destination (Join-Path $bundleRoot "blueprints\monitoring-host\wazuh-single-node\config\wazuh_dashboard\wazuh.yml") -Force
+$legacyBlueprintRoot = Join-Path $bundleRoot "blueprints\monitoring-host"
+if (Test-Path $legacyBlueprintRoot) {
+    Remove-Item -Recurse -Force $legacyBlueprintRoot
 }
 
 $statefulVolumes = docker volume ls --format "{{.Name}}" | Where-Object { $_ -like "single-node_*" } | Sort-Object

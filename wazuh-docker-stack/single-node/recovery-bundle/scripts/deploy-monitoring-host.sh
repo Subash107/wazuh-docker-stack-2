@@ -67,10 +67,80 @@ if ! command -v docker >/dev/null 2>&1; then
   exit 1
 fi
 
+is_monitoring_source_root() {
+  local path="$1"
+  [[ -f "$path/docker-compose.yml" && -f "$path/scripts/windows/Invoke-MonitoringPhase1Rollout.ps1" ]]
+}
+
+is_wazuh_single_node_source_root() {
+  local path="$1"
+  [[ -f "$path/docker-compose.yml" && -f "$path/config/wazuh_cluster/ossec.conf" ]]
+}
+
+get_latest_bundle_snapshot() {
+  if [[ ! -d "$BACKUP_ROOT" ]]; then
+    return 1
+  fi
+
+  find "$BACKUP_ROOT" -mindepth 1 -maxdepth 1 -type d -printf '%T@ %p\n' |
+    sort -nr |
+    head -n 1 |
+    cut -d' ' -f2-
+}
+
+resolve_deployment_sources() {
+  local canonical_wazuh_single_root="$SOURCE_WAZUH_ROOT/single-node"
+  local legacy_monitoring_root="$BUNDLE_ROOT/blueprints/monitoring-host/monitoring-stack"
+  local legacy_wazuh_root="$BUNDLE_ROOT/blueprints/monitoring-host/wazuh-single-node"
+
+  if [[ -n "$BUNDLE_STAMP" ]]; then
+    local snapshot_root="$BACKUP_ROOT/$BUNDLE_STAMP"
+    local snapshot_monitoring_root="$snapshot_root/monitoring-stack"
+    local snapshot_wazuh_root="$snapshot_root/wazuh-single-node"
+    if ! is_monitoring_source_root "$snapshot_monitoring_root" || ! is_wazuh_single_node_source_root "$snapshot_wazuh_root"; then
+      echo "Bundle stamp '$BUNDLE_STAMP' does not contain a complete host snapshot under '$snapshot_root'." >&2
+      exit 1
+    fi
+
+    MONITORING_SOURCE="$snapshot_monitoring_root"
+    WAZUH_SOURCE="$snapshot_wazuh_root"
+    DEPLOYMENT_SOURCE_TYPE="snapshot"
+    return 0
+  fi
+
+  if is_monitoring_source_root "$SOURCE_MONITORING_ROOT" && is_wazuh_single_node_source_root "$canonical_wazuh_single_root"; then
+    MONITORING_SOURCE="$SOURCE_MONITORING_ROOT"
+    WAZUH_SOURCE="$canonical_wazuh_single_root"
+    DEPLOYMENT_SOURCE_TYPE="canonical"
+    return 0
+  fi
+
+  local latest_snapshot=""
+  latest_snapshot="$(get_latest_bundle_snapshot || true)"
+  if [[ -n "$latest_snapshot" ]]; then
+    local snapshot_monitoring_root="$latest_snapshot/monitoring-stack"
+    local snapshot_wazuh_root="$latest_snapshot/wazuh-single-node"
+    if is_monitoring_source_root "$snapshot_monitoring_root" && is_wazuh_single_node_source_root "$snapshot_wazuh_root"; then
+      MONITORING_SOURCE="$snapshot_monitoring_root"
+      WAZUH_SOURCE="$snapshot_wazuh_root"
+      DEPLOYMENT_SOURCE_TYPE="latest-snapshot"
+      return 0
+    fi
+  fi
+
+  if is_monitoring_source_root "$legacy_monitoring_root" && is_wazuh_single_node_source_root "$legacy_wazuh_root"; then
+    MONITORING_SOURCE="$legacy_monitoring_root"
+    WAZUH_SOURCE="$legacy_wazuh_root"
+    DEPLOYMENT_SOURCE_TYPE="legacy-blueprint"
+    return 0
+  fi
+
+  echo "No deployable host source was found. Use the live repository source or provide a recovery bundle with backups/monitoring-host/<stamp>." >&2
+  exit 1
+}
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BUNDLE_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-MONITORING_SOURCE="$BUNDLE_ROOT/blueprints/monitoring-host/monitoring-stack"
-WAZUH_SOURCE="$BUNDLE_ROOT/blueprints/monitoring-host/wazuh-single-node"
 SOURCE_MONITORING_ROOT="$(cd "$BUNDLE_ROOT/../../.." && pwd)"
 SOURCE_MONITORING_SECRETS="$SOURCE_MONITORING_ROOT/secrets"
 SOURCE_WAZUH_ROOT="$(cd "$BUNDLE_ROOT/../.." && pwd)"
@@ -80,6 +150,9 @@ WAZUH_ROOT_TARGET="$TARGET_ROOT/wazuh-docker-stack"
 WAZUH_SECRETS_TARGET="$WAZUH_ROOT_TARGET/secrets"
 RECOVERY_BUNDLE_TARGET="$WAZUH_TARGET/recovery-bundle"
 BACKUP_ROOT="$BUNDLE_ROOT/backups/monitoring-host"
+DEPLOYMENT_SOURCE_TYPE=""
+
+resolve_deployment_sources
 
 mkdir -p "$TARGET_ROOT" "$WAZUH_ROOT_TARGET" "$WAZUH_TARGET" "$WAZUH_SECRETS_TARGET" "$RECOVERY_BUNDLE_TARGET" "$RECOVERY_BUNDLE_TARGET/config" "$RECOVERY_BUNDLE_TARGET/scripts" "$RECOVERY_BUNDLE_TARGET/blueprints"
 cp -af "$MONITORING_SOURCE/." "$TARGET_ROOT/"
@@ -137,6 +210,7 @@ fi
 
 cat <<EOF
 Monitoring host deployed to $TARGET_ROOT
+Host deployment source: $DEPLOYMENT_SOURCE_TYPE
 $( [[ "$RESTORE_VOLUME_BACKUPS" == "true" && -n "$BUNDLE_STAMP" ]] && printf 'Restored stateful Docker volumes from bundle stamp: %s\n' "$BUNDLE_STAMP" )
 $( [[ "$SKIP_LOCAL_SEED" == "true" ]] && printf 'Local runtime secrets and .env files were not seeded into the target root.\n' )
 $( [[ "$SKIP_VALIDATION" == "true" ]] && printf 'Config validation was skipped for staged rebuild use.\n' )

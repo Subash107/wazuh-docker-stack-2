@@ -24,8 +24,6 @@ This bundle captures the current two-node monitoring architecture:
   - Compressed Ubuntu VM snapshot containing the current service configs, custom app trees, Wazuh agent tree, and service units.
 - `backups/metadata/<timestamp>/`
   - Service inventory, package list, ownership map, Docker state, resolved compose configs, volume manifest, and SHA256 checksums.
-- `blueprints/monitoring-host/`
-  - Deployable host-side source files.
 - `blueprints/sensor-vm/`
   - Canonical source files for clean Ubuntu sensor deployment.
 - `scripts/`
@@ -167,7 +165,7 @@ Current local-only setup on this machine:
 This will:
 
 - create a fresh recovery bundle snapshot
-- upload the current bundle blueprints, scripts, and snapshot to the off-host target
+- upload the recovery scripts, sensor blueprint, and timestamped host and sensor snapshots to the off-host target
 - prune local and remote snapshots using the configured retention counts
 - write logs to `logs/offsite-backup/`
 
@@ -188,6 +186,7 @@ Unattended mode, runs even when you are logged out:
 ## Notes
 
 - The host deployment script patches `WAZUH_DASHBOARD_URL` to the host address you pass in.
+- The host deployment and rebuild drill paths resolve source from the live repo when available, otherwise from `backups/monitoring-host/<stamp>/`.
 - Restoring the exported `single-node_*` Docker volumes is opt-in with `-RestoreVolumeBackups` so the current live host is not modified accidentally.
 - The VM restore script patches the Wazuh agent manager address in `/var/ossec/etc/ossec.conf` to the manager IP you pass in.
 - The clean sensor bootstrap path is declared in `blueprints/sensor-vm/`; the archive restore path is for reproducing a previously captured VM state.
