@@ -17,6 +17,9 @@ $projectRootResolved = (Resolve-Path $ProjectRoot).Path
 if ([string]::IsNullOrWhiteSpace($VaultPath)) {
     $VaultPath = Join-Path $projectRootResolved "local\secret-vault\monitoring-secrets.enc.json"
 }
+elseif (-not [System.IO.Path]::IsPathRooted($VaultPath)) {
+    $VaultPath = Join-Path $projectRootResolved $VaultPath
+}
 if (-not (Test-Path $VaultPath)) {
     throw "Vault file not found at $VaultPath"
 }
@@ -26,7 +29,15 @@ $newPassphraseValue = Get-SecretVaultPassphrase -Passphrase $NewPassphrase -Envi
 
 $vaultRecord = ConvertFrom-Json -InputObject (Get-Content -Path $VaultPath -Raw -Encoding UTF8)
 $plaintext = Unprotect-SecretVaultPayload -VaultRecord $vaultRecord -Passphrase $currentPassphraseValue
-$rotatedRecord = Protect-SecretVaultPayload -Plaintext $plaintext -Passphrase $newPassphraseValue
+$payload = ConvertFrom-Json -InputObject $plaintext
+$normalizedPayload = [ordered]@{
+    format = [string]$payload.format
+    created_at = [string]$payload.created_at
+    machine = [string]$payload.machine
+    files = ConvertTo-SecretVaultFilesMap -Files $payload.files
+}
+$normalizedPlaintext = ($normalizedPayload | ConvertTo-Json -Depth 6)
+$rotatedRecord = Protect-SecretVaultPayload -Plaintext $normalizedPlaintext -Passphrase $newPassphraseValue
 
 $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
 $backupPath = "$VaultPath.$timestamp.bak"

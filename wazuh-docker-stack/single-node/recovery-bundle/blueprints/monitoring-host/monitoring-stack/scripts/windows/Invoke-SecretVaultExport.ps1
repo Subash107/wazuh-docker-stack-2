@@ -16,6 +16,9 @@ $projectRootResolved = (Resolve-Path $ProjectRoot).Path
 if ([string]::IsNullOrWhiteSpace($VaultPath)) {
     $VaultPath = Join-Path $projectRootResolved "local\secret-vault\monitoring-secrets.enc.json"
 }
+elseif (-not [System.IO.Path]::IsPathRooted($VaultPath)) {
+    $VaultPath = Join-Path $projectRootResolved $VaultPath
+}
 
 $passphraseValue = Get-SecretVaultPassphrase -Passphrase $Passphrase
 $vaultDirectory = Split-Path $VaultPath -Parent
@@ -41,7 +44,7 @@ $files = [ordered]@{}
 foreach ($relativePath in $candidateFiles) {
     $fullPath = Join-Path $projectRootResolved $relativePath
     if (Test-Path $fullPath) {
-        $files[$relativePath] = Get-Content -Path $fullPath -Raw -Encoding UTF8
+        $files[$relativePath] = Read-PlainTextFile -Path $fullPath
     }
 }
 

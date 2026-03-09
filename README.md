@@ -75,7 +75,7 @@ The root monitoring stack expects the external Docker volume `single-node_wazuh_
 - `scripts/windows/Invoke-SecretVaultExport.ps1`: encrypt local secret files into one vault file
 - `scripts/windows/Invoke-SecretVaultImport.ps1`: restore local secret files from the encrypted vault
 - `scripts/windows/Invoke-SecretVaultRekey.ps1`: rotate the encrypted vault passphrase
-- `scripts/windows/Invoke-BareMetalRebuildDrill.ps1`: stage a clean-host rebuild drill from the recovery bundle and secret vault
+- `scripts/windows/Invoke-BareMetalRebuildDrill.ps1`: stage a clean-host rebuild drill from the recovery bundle and secret vault, including staged sensor bootstrap and archive validation
 - `scripts/windows/Invoke-SensorVmBootstrap.ps1`: Windows entrypoint for the canonical sensor bootstrap
 - `scripts/windows/Invoke-PrivateCredentialExport.ps1`: local-only credential export generator
 - `scripts/windows/Invoke-PrivateOperatorLauncher.ps1`: local-only launcher for the public index, private credentials, and PDFs
@@ -124,7 +124,7 @@ The generated PDF handbook lives under `docs/pdf-handbook/` and is served by the
 
 Use `scripts/windows/Invoke-GatewayAccessSetup.ps1` to generate or rotate the gateway credential files locally.
 Use `scripts/windows/Invoke-SecretVaultExport.ps1` to keep an encrypted backup of the local secret state.
-Use `scripts/windows/Invoke-BareMetalRebuildDrill.ps1` to rehearse a clean monitoring-host rebuild before you need a real recovery.
+Use `scripts/windows/Invoke-BareMetalRebuildDrill.ps1` to rehearse a clean monitoring-host rebuild and staged sensor recovery validation before you need a real recovery.
 
 ## Notes
 

@@ -1,11 +1,11 @@
 # Bare-Metal Rebuild Drill
 
-This runbook rehearses a clean monitoring-host rebuild from two artifacts only:
+This runbook rehearses a clean monitoring-host rebuild and validates the sensor recovery path from two artifacts only:
 
 - the recovery bundle under `wazuh-docker-stack/single-node/recovery-bundle/`
 - the encrypted local secret vault under `local/secret-vault/monitoring-secrets.enc.json`
 
-The default mode is safe validation. It stages a fresh workspace under `logs/rebuild-drills/`, imports the secret vault, then runs the guarded Wazuh and monitoring rollout validators against that staged root.
+The default mode is safe validation. It stages a fresh workspace under `logs/rebuild-drills/`, imports the secret vault, validates the staged sensor bootstrap assets, validates the latest sensor archive restore input when one is available, then runs the guarded Wazuh and monitoring rollout validators against that staged root.
 
 ## Validation Drill
 
@@ -42,9 +42,11 @@ powershell -ExecutionPolicy Bypass -File .\scripts\windows\Invoke-BareMetalRebui
 
 1. Deploys the monitoring-host blueprints from the recovery bundle into a fresh staged root using `deploy-monitoring-host.ps1 -SkipLocalSeed -SkipValidation -SkipStart`.
 2. Imports the encrypted vault into that staged root.
-3. Runs `Invoke-WazuhSingleNodeRollout.ps1` against the staged root first.
-4. Runs `Invoke-MonitoringPhase1Rollout.ps1` against the staged root second.
-5. In `-Apply` mode, probes gateway `/healthz`, an authenticated Prometheus gateway request, and the monitoring service index health endpoint.
+3. Validates the staged sensor bootstrap path by rendering the canonical sensor compose project and checking the rendered `ossec.conf` structure.
+4. Validates the latest available sensor archive against the canonical restore expectations when a sensor archive exists in the recovery bundle.
+5. Runs `Invoke-WazuhSingleNodeRollout.ps1` against the staged root first.
+6. Runs `Invoke-MonitoringPhase1Rollout.ps1` against the staged root second.
+7. In `-Apply` mode, probes gateway `/healthz`, an authenticated Prometheus gateway request, and the monitoring service index health endpoint.
 
 Wazuh is validated first because the root monitoring stack expects the external volume `single-node_wazuh_logs` to exist.
 
@@ -59,13 +61,15 @@ That summary records:
 - source bundle path
 - source vault path
 - staged workspace path
+- sensor bootstrap validation status
+- sensor restore validation status
 - monitoring rollout artifact path
 - Wazuh rollout artifact path
 - the latest available sensor VM archive path
 
-## Next Step After Host Drill
+## Sensor Scope
 
-The drill only proves the Windows monitoring host rebuild path. The sensor VM still needs one of these:
+The drill now validates the staged Ubuntu sensor bootstrap assets and the latest sensor archive contents, but it does not remote-apply to a live Ubuntu VM. The real sensor recovery still uses one of these:
 
 - clean bootstrap: `scripts/windows/Invoke-SensorVmBootstrap.ps1`
 - archive restore: `restore-sensor-vm.sh` from the recovery bundle

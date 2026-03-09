@@ -16,6 +16,9 @@ $projectRootResolved = (Resolve-Path $ProjectRoot).Path
 if ([string]::IsNullOrWhiteSpace($VaultPath)) {
     $VaultPath = Join-Path $projectRootResolved "local\secret-vault\monitoring-secrets.enc.json"
 }
+elseif (-not [System.IO.Path]::IsPathRooted($VaultPath)) {
+    $VaultPath = Join-Path $projectRootResolved $VaultPath
+}
 if (-not (Test-Path $VaultPath)) {
     throw "Vault file not found at $VaultPath"
 }
@@ -24,14 +27,14 @@ $passphraseValue = Get-SecretVaultPassphrase -Passphrase $Passphrase
 $vaultRecord = ConvertFrom-Json -InputObject (Get-Content -Path $VaultPath -Raw -Encoding UTF8)
 $plaintext = Unprotect-SecretVaultPayload -VaultRecord $vaultRecord -Passphrase $passphraseValue
 $payload = ConvertFrom-Json -InputObject $plaintext
+$files = ConvertTo-SecretVaultFilesMap -Files $payload.files
 
 $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
 $backupRoot = Join-Path $projectRootResolved "local\secret-vault\import-backup\$timestamp"
 $restored = @()
 $backedUp = $false
 
-foreach ($property in $payload.files.PSObject.Properties) {
-    $relativePath = $property.Name
+foreach ($relativePath in $files.Keys) {
     $destinationPath = Join-Path $projectRootResolved $relativePath
     $destinationDirectory = Split-Path $destinationPath -Parent
     $backupPath = Join-Path $backupRoot $relativePath
@@ -45,7 +48,7 @@ foreach ($property in $payload.files.PSObject.Properties) {
         $backedUp = $true
     }
 
-    Write-Utf8NoBom -Path $destinationPath -Content ([string]$property.Value)
+    Write-Utf8NoBom -Path $destinationPath -Content $files[$relativePath]
     $restored += $relativePath
 }
 

@@ -10,6 +10,18 @@ function Write-Utf8NoBom {
     [System.IO.File]::WriteAllText($Path, $Content, $encoding)
 }
 
+function Read-PlainTextFile {
+    param([string]$Path)
+
+    $reader = [System.IO.StreamReader]::new($Path, $true)
+    try {
+        return $reader.ReadToEnd()
+    }
+    finally {
+        $reader.Dispose()
+    }
+}
+
 function Get-SecretVaultPassphrase {
     param(
         [string]$Passphrase,
@@ -216,4 +228,52 @@ function Unprotect-SecretVaultPayload {
     }
 
     return [System.Text.Encoding]::UTF8.GetString($plainBytes)
+}
+
+function ConvertTo-SecretVaultEntryText {
+    param(
+        [string]$RelativePath,
+        [object]$Value
+    )
+
+    if ($null -eq $Value) {
+        return ""
+    }
+
+    if ($Value -is [string]) {
+        return $Value
+    }
+
+    $psValue = [psobject]$Value
+    $legacyValueProperty = $psValue.PSObject.Properties["value"]
+    if ($null -ne $legacyValueProperty) {
+        return [string]$legacyValueProperty.Value
+    }
+
+    throw "Vault entry '$RelativePath' is not a plain string and could not be normalized."
+}
+
+function ConvertTo-SecretVaultFilesMap {
+    param([object]$Files)
+
+    $normalized = [ordered]@{}
+    if ($null -eq $Files) {
+        return $normalized
+    }
+
+    if ($Files -is [System.Collections.IDictionary]) {
+        foreach ($entry in $Files.GetEnumerator()) {
+            $relativePath = [string]$entry.Key
+            $normalized[$relativePath] = ConvertTo-SecretVaultEntryText -RelativePath $relativePath -Value $entry.Value
+        }
+
+        return $normalized
+    }
+
+    foreach ($property in ([psobject]$Files).PSObject.Properties) {
+        $relativePath = [string]$property.Name
+        $normalized[$relativePath] = ConvertTo-SecretVaultEntryText -RelativePath $relativePath -Value $property.Value
+    }
+
+    return $normalized
 }
