@@ -10,6 +10,7 @@
     - http://192.168.1.6:8083/
   labels:
     probe_group: sensor_http
+    probe_module: http_auth_prompt
     service_name: mitmproxy_ui
     dashboard_name: mitmproxy
     host_name: sensor_vm

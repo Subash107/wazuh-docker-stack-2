@@ -136,12 +136,12 @@
       "group": "sensor",
       "url": "http://192.168.1.6:8083/#/flows",
       "username": "none",
-      "password_source": "none",
-      "notes": "Flow browser for proxy traffic.",
+      "password_source": "interactive auth token from mitmproxy container startup logs",
+      "notes": "Flow browser for proxy traffic. Unauthenticated requests are expected to return an auth prompt.",
       "check": {
         "type": "http",
         "target": "http://192.168.1.6:8083/",
-        "allowed_statuses": [200]
+        "allowed_statuses": [200, 403]
       }
     },
     {

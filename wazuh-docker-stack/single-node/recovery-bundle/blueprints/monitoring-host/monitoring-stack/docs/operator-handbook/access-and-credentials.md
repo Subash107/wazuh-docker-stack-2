@@ -17,7 +17,7 @@ Do not commit real passwords into this file. Keep passwords in local-only source
 | Wazuh Indexer | `https://192.168.1.3:9200` | `admin` | `wazuh-docker-stack/secrets/indexer_password.txt` | Indexer/API backend |
 | Pi-hole Admin | `http://192.168.1.6:8080/admin/login` | none | `secrets/pihole_web_password.txt` | Sensor DNS dashboard |
 | Pi-hole DNS | `192.168.1.6:53` | none | none | UDP/TCP DNS listener |
-| mitmproxy Web UI | `http://192.168.1.6:8083/#/flows` | none | none | Flow browser |
+| mitmproxy Web UI | `http://192.168.1.6:8083/#/flows` | none | mitmproxy startup token from `docker logs mitmproxy` on the sensor VM | Flow browser; unauthenticated requests are expected to return an auth prompt |
 | mitmproxy Proxy | `192.168.1.6:8082` | none | none | Proxy listener |
 | Ubuntu Sensor SSH | `ssh subash@192.168.1.6` | `subash` | `secrets/vm_ssh_password.txt` | Sensor administration |
 
@@ -37,6 +37,7 @@ Do not commit real passwords into this file. Keep passwords in local-only source
 - Sensor SSH password: `secrets/vm_ssh_password.txt`
 - Sensor sudo password: `secrets/vm_sudo_password.txt`
 - Pi-hole password: `secrets/pihole_web_password.txt`
+- mitmproxy Web UI token: runtime output from `docker logs mitmproxy` on the sensor VM
 
 To migrate older local `.env` and override values into these secret files:
 

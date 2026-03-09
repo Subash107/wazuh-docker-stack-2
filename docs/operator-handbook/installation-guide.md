@@ -61,7 +61,7 @@ This installs:
 - `suricata`
 - Pi-hole on `8080` and DNS `53`
 - mitmproxy proxy on `8082`
-- mitmproxy web UI on `8083`
+- mitmproxy web UI on `8083` with an authentication prompt
 
 The operator docs are available in markdown under `docs/operator-handbook/` and as PDFs in `docs/pdf-handbook/`.
 
@@ -89,5 +89,5 @@ Sensor VM:
 - `systemctl status monitoring-sensor-firewall`
 - `docker ps`
 - `curl http://192.168.1.6:8080/admin/login`
-- `curl http://192.168.1.6:8083/`
+- `curl -i http://192.168.1.6:8083/` and confirm `403 Authentication Required`
 - `dig @192.168.1.6 example.com`

@@ -107,3 +107,9 @@ Use mitmproxy for:
 - reviewing captured HTTP and HTTPS flows
 - tracing suspicious outbound requests
 - validating proxy interception in the sensor path
+
+Notes:
+
+- the web UI now presents an authentication prompt before showing flows
+- get the current token from `docker logs mitmproxy` on the sensor VM
+- an unauthenticated `403 Authentication Required` response is expected and is treated as healthy by monitoring

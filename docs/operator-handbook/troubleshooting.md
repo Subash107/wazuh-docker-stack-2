@@ -82,12 +82,14 @@ Expected state:
 Check:
 
 - `docker logs mitmproxy`
-- `curl http://192.168.1.6:8083/`
+- `curl -i http://192.168.1.6:8083/`
 - `ss -ltnp | grep 8083`
 
 Note:
 
 - `HEAD` to mitmweb may return `405`; use a normal browser GET or `curl` GET
+- `403 Authentication Required` is expected before you enter the current token
+- if you need the token, read the mitmproxy container startup logs with `docker logs mitmproxy`
 
 ### mitmproxy proxy listener fails
 

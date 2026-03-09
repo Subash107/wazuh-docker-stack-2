@@ -5,6 +5,15 @@ modules:
     http:
       preferred_ip_protocol: "ip4"
 
+  http_auth_prompt:
+    prober: http
+    timeout: 5s
+    http:
+      preferred_ip_protocol: "ip4"
+      valid_status_codes:
+        - 200
+        - 403
+
   https_gateway_health:
     prober: http
     timeout: 5s
