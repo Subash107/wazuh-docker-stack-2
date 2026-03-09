@@ -5,11 +5,12 @@
       <port>__MANAGER_PORT__</port>
       <protocol>tcp</protocol>
     </server>
-    <client_buffer>
-      <disabled>no</disabled>
-      <queue_size>5000</queue_size>
-    </client_buffer>
   </client>
+
+  <client_buffer>
+    <disabled>no</disabled>
+    <queue_size>5000</queue_size>
+  </client_buffer>
 
   <logging>
     <log_format>plain</log_format>
@@ -58,13 +59,13 @@
     <location>/var/log/suricata/eve.json</location>
   </localfile>
 
-  <integrity_monitoring>
+  <syscheck>
     <disabled>no</disabled>
     <directories check_all="yes" report_changes="yes" realtime="yes">/etc</directories>
     <directories check_all="yes" report_changes="yes" realtime="yes">/usr/bin</directories>
-  </integrity_monitoring>
+  </syscheck>
 
-  <rootkit_detection>
+  <rootcheck>
     <disabled>no</disabled>
-  </rootkit_detection>
+  </rootcheck>
 </ossec_config>

@@ -1,5 +1,3 @@
-name: monitoring-sensor
-
 services:
   pihole:
     image: ${PIHOLE_IMAGE}

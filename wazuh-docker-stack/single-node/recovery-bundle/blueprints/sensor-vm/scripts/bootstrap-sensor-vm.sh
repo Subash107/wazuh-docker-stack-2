@@ -107,7 +107,12 @@ install_base_packages() {
 disable_legacy_sensor_units() {
   systemctl disable --now docker-user-hardening.service >/dev/null 2>&1 || true
   systemctl disable --now mitmproxy.service >/dev/null 2>&1 || true
+  systemctl disable --now pihole-admin-proxy.socket >/dev/null 2>&1 || true
+  systemctl disable --now pihole-admin-proxy.service >/dev/null 2>&1 || true
   rm -f /etc/systemd/system/docker-user-hardening.service
+  rm -f /etc/systemd/system/pihole-admin-proxy.socket
+  rm -f /etc/systemd/system/pihole-admin-proxy.service
+  systemctl daemon-reload
 }
 
 configure_wazuh_agent() {
