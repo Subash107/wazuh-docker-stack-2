@@ -44,8 +44,14 @@ receivers:
           Target: {{ .CommonLabels.instance }}
           Job: {{ .CommonLabels.job }}
           Service: {{ .CommonLabels.service_name }}
-          Started: {{ .StartsAt }}
-          Ends: {{ .EndsAt }}
+          Notification status: {{ .Status }}
+          Alerts in group: {{ len .Alerts }}
+          Alert timeline:
+          {{ range .Alerts }}
+          - Status: {{ .Status }}
+            Started: {{ .StartsAt }}
+            {{ if eq .Status "resolved" }}Ended: {{ .EndsAt }}{{ else }}Ended: active{{ end }}
+          {{ end }}
   - name: "email"
     email_configs:
       - to: "lamasubash26@outlook.com"
