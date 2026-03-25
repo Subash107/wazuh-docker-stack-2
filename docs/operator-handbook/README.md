@@ -10,8 +10,10 @@ Use these documents in this order:
 4. [Access And Credentials](/d:/Monitoring/docs/operator-handbook/access-and-credentials.md)
 5. [Tools User Guide](/d:/Monitoring/docs/operator-handbook/tools-user-guide.md)
 6. [Monitoring And Threat Identification Guide](/d:/Monitoring/docs/operator-handbook/monitoring-and-threat-identification-guide.md)
-7. [Troubleshooting](/d:/Monitoring/docs/operator-handbook/troubleshooting.md)
-8. [PDF Handbook Folder](/d:/Monitoring/docs/pdf-handbook/README.md)
+7. [Brute-Force Response Playbook](/d:/Monitoring/docs/operator-handbook/brute-force-response-playbook.md)
+8. [Suspicious DNS And HTTP Investigation Playbook](/d:/Monitoring/docs/operator-handbook/suspicious-dns-http-investigation-playbook.md)
+9. [Troubleshooting](/d:/Monitoring/docs/operator-handbook/troubleshooting.md)
+10. [PDF Handbook Folder](/d:/Monitoring/docs/pdf-handbook/README.md)
 
 ## Scope
 
@@ -21,6 +23,7 @@ The handbook covers:
 - Ubuntu sensor bootstrap and restore
 - Prometheus, Alertmanager, Blackbox, Wazuh, Pi-hole, and mitmproxy usage
 - lab segmentation, recovery, multi-OS, duplicate-tool, and practice-target guidance
+- incident playbooks for brute-force and suspicious DNS or HTTP investigations
 - current LAN URLs and credential sources
 - common break/fix procedures
 - offline PDF exports in one folder under `docs/pdf-handbook/`

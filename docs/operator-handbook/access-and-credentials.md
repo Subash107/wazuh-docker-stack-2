@@ -20,6 +20,9 @@ Do not commit real passwords into this file. Keep passwords in local-only source
 | Pi-hole DNS | `192.168.1.6:53` | none | none | UDP/TCP DNS listener |
 | mitmproxy Web UI | `http://192.168.1.6:8083/#/flows` | none | `secrets/mitmproxy_web_password.txt` | Flow browser; enter the shared web password when prompted |
 | mitmproxy Proxy | `192.168.1.6:8082` | none | none | Proxy listener |
+| Practice Linux Web | `http://192.168.1.50/` | none | lab-local practice target credentials | Starter segmented Linux training target |
+| Practice Windows Web | `http://192.168.1.60/` | none | lab-local practice target credentials | Starter segmented Windows training target |
+| Practice Auth API | `http://192.168.1.70:8080/` | varies by target | lab-local practice target credentials | Starter segmented auth or API training target |
 | Ubuntu Sensor SSH | `ssh subash@192.168.1.6` | `subash` | `secrets/vm_ssh_password.txt` | Sensor administration |
 
 ## Current ICMP monitored nodes
