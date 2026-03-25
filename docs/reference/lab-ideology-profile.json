@@ -1,0 +1,100 @@
+{
+  "title": "Monitoring SOC Lab Ideology Profile",
+  "closed_network": {
+    "lab_cidrs": [
+      "192.168.1.0/24"
+    ],
+    "monitoring_host": "192.168.1.3",
+    "sensor_vm": "192.168.1.6",
+    "expected_gateway_ports": [
+      9443,
+      9444,
+      9445,
+      9446,
+      9447
+    ],
+    "allowed_public_egress": [
+      "smtp-relay.brevo.com",
+      "ipwho.is"
+    ]
+  },
+  "virtualization": {
+    "monitoring_host_recovery_bundle": "wazuh-docker-stack/single-node/recovery-bundle/",
+    "sensor_blueprint": "wazuh-docker-stack/single-node/recovery-bundle/blueprints/sensor-vm/",
+    "hypervisor_support": [
+      "Hyper-V"
+    ]
+  },
+  "realistic_environment": {
+    "pin_images_by_digest": true,
+    "match_service_ports_to_live_layout": true,
+    "monitor_practice_targets_like_real_services": true
+  },
+  "health_monitoring": {
+    "required_components": [
+      "Prometheus",
+      "Blackbox Exporter",
+      "Alertmanager",
+      "Wazuh",
+      "Monitoring Service Index",
+      "Invoke-Day1Check.ps1",
+      "Invoke-LabIdeologyAudit.ps1"
+    ]
+  },
+  "resource_baseline": {
+    "monitoring_host": {
+      "cpu_cores": 4,
+      "memory_gb": 8,
+      "disk_gb": 100
+    },
+    "sensor_vm": {
+      "cpu_cores": 2,
+      "memory_gb": 4,
+      "disk_gb": 40
+    },
+    "notes": "Use projects/ubuntu-lightweight-soc for constrained 4 GB sensor deployments."
+  },
+  "operating_system_matrix": [
+    "Windows monitoring host",
+    "Ubuntu sensor VM",
+    "Optional Windows practice VM",
+    "Optional Linux practice VM"
+  ],
+  "duplicate_tool_matrix": [
+    {
+      "finding": "DNS anomalies",
+      "primary": "Pi-hole",
+      "secondary": [
+        "Wazuh"
+      ]
+    },
+    {
+      "finding": "HTTP or HTTPS anomalies",
+      "primary": "mitmproxy",
+      "secondary": [
+        "Suricata",
+        "Wazuh"
+      ]
+    },
+    {
+      "finding": "IDS alerts",
+      "primary": "Suricata",
+      "secondary": [
+        "Wazuh"
+      ]
+    },
+    {
+      "finding": "Service availability",
+      "primary": "Prometheus",
+      "secondary": [
+        "Blackbox Exporter",
+        "Monitoring Service Index"
+      ]
+    }
+  ],
+  "practice_targets": {
+    "inventory_file": "targets/practice_http_endpoints.yml",
+    "require_private_addresses": true,
+    "segmentation_rule": "Keep practice targets on the lab subnet and do not expose them directly to the Internet."
+  }
+}

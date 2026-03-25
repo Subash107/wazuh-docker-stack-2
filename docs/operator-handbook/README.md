@@ -5,12 +5,15 @@ This folder is the central operator documentation set for the monitoring project
 Use these documents in this order:
 
 1. [Project Overview](/d:/Monitoring/docs/operator-handbook/project-overview.md)
-2. [Installation Guide](/d:/Monitoring/docs/operator-handbook/installation-guide.md)
-3. [Access And Credentials](/d:/Monitoring/docs/operator-handbook/access-and-credentials.md)
-4. [Tools User Guide](/d:/Monitoring/docs/operator-handbook/tools-user-guide.md)
-5. [Monitoring And Threat Identification Guide](/d:/Monitoring/docs/operator-handbook/monitoring-and-threat-identification-guide.md)
-6. [Troubleshooting](/d:/Monitoring/docs/operator-handbook/troubleshooting.md)
-7. [PDF Handbook Folder](/d:/Monitoring/docs/pdf-handbook/README.md)
+2. [Lab Environment Guide](/d:/Monitoring/docs/operator-handbook/lab-environment-guide.md)
+3. [Installation Guide](/d:/Monitoring/docs/operator-handbook/installation-guide.md)
+4. [Access And Credentials](/d:/Monitoring/docs/operator-handbook/access-and-credentials.md)
+5. [Tools User Guide](/d:/Monitoring/docs/operator-handbook/tools-user-guide.md)
+6. [Monitoring And Threat Identification Guide](/d:/Monitoring/docs/operator-handbook/monitoring-and-threat-identification-guide.md)
+7. [Brute-Force Response Playbook](/d:/Monitoring/docs/operator-handbook/brute-force-response-playbook.md)
+8. [Suspicious DNS And HTTP Investigation Playbook](/d:/Monitoring/docs/operator-handbook/suspicious-dns-http-investigation-playbook.md)
+9. [Troubleshooting](/d:/Monitoring/docs/operator-handbook/troubleshooting.md)
+10. [PDF Handbook Folder](/d:/Monitoring/docs/pdf-handbook/README.md)
 
 ## Scope
 
@@ -19,6 +22,8 @@ The handbook covers:
 - monitoring host deployment
 - Ubuntu sensor bootstrap and restore
 - Prometheus, Alertmanager, Blackbox, Wazuh, Pi-hole, and mitmproxy usage
+- lab segmentation, recovery, multi-OS, duplicate-tool, and practice-target guidance
+- incident playbooks for brute-force and suspicious DNS or HTTP investigations
 - current LAN URLs and credential sources
 - common break/fix procedures
 - offline PDF exports in one folder under `docs/pdf-handbook/`

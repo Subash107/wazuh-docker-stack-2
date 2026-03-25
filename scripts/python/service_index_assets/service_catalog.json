@@ -173,6 +173,48 @@
       }
     },
     {
+      "id": "practice-linux-web",
+      "name": "Practice Linux Web",
+      "group": "practice",
+      "url": "http://192.168.1.50/",
+      "username": "none",
+      "password_source": "lab-local practice target credentials",
+      "notes": "Starter segmented Linux training web target on the practice subnet.",
+      "check": {
+        "type": "http",
+        "target": "http://192.168.1.50/",
+        "allowed_statuses": [200]
+      }
+    },
+    {
+      "id": "practice-windows-web",
+      "name": "Practice Windows Web",
+      "group": "practice",
+      "url": "http://192.168.1.60/",
+      "username": "none",
+      "password_source": "lab-local practice target credentials",
+      "notes": "Starter segmented Windows training web target on the practice subnet.",
+      "check": {
+        "type": "http",
+        "target": "http://192.168.1.60/",
+        "allowed_statuses": [200]
+      }
+    },
+    {
+      "id": "practice-auth-api",
+      "name": "Practice Auth API",
+      "group": "practice",
+      "url": "http://192.168.1.70:8080/",
+      "username": "varies by training target",
+      "password_source": "lab-local practice target credentials",
+      "notes": "Starter segmented API or auth-focused training target on the practice subnet.",
+      "check": {
+        "type": "http",
+        "target": "http://192.168.1.70:8080/",
+        "allowed_statuses": [200]
+      }
+    },
+    {
       "id": "sensor-ssh",
       "name": "Ubuntu Sensor SSH",
       "group": "sensor",

@@ -107,6 +107,28 @@ groups:
           summary: "Gateway service {{ $labels.service_name }} is slow"
           description: "Average gateway probe duration for {{ $labels.instance }} has stayed above 2 seconds for 10 minutes."
 
+  - name: practice_http_alerts
+    rules:
+      - alert: PracticeHttpEndpointDown
+        expr: probe_success{job="practice_http_endpoints"} == 0
+        for: 1m
+        labels:
+          severity: warning
+          category: stack_health
+        annotations:
+          summary: "Practice target {{ $labels.service_name }} is unreachable"
+          description: "Blackbox HTTP probe to practice target {{ $labels.instance }} has failed for more than 1 minute."
+
+      - alert: PracticeHttpEndpointSlow
+        expr: avg_over_time(probe_duration_seconds{job="practice_http_endpoints"}[5m]) > 2
+        for: 10m
+        labels:
+          severity: warning
+          category: stack_health
+        annotations:
+          summary: "Practice target {{ $labels.service_name }} is slow"
+          description: "Average HTTP probe duration for practice target {{ $labels.instance }} has stayed above 2 seconds for 10 minutes."
+
   - name: sensor_tcp_alerts
     rules:
       - alert: SensorTcpEndpointDown

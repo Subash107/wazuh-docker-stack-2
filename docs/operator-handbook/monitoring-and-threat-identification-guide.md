@@ -116,6 +116,7 @@ Check:
 
 - ICMP checks for the monitoring host and sensor VM
 - HTTP checks for Pi-hole admin and mitmproxy UI
+- optional HTTP checks for isolated practice targets
 - TCP check for the mitmproxy proxy listener
 - DNS probe for Pi-hole on UDP 53
 

@@ -1,0 +1,95 @@
+# Practice-target HTTP inventory
+# -----------------------------
+# This file is intentionally shipped as a disabled template so the monitoring
+# stack does not raise alerts for nonexistent training targets.
+#
+# Current active lab addresses:
+# - monitoring host: 192.168.1.3
+# - sensor VM: 192.168.1.6
+#
+# Suggested segmented practice-target ranges inside 192.168.1.0/24:
+# - 192.168.1.50-59  Linux web targets
+# - 192.168.1.60-69  Windows web targets
+# - 192.168.1.70-79  API or auth-focused targets
+#
+# Rules:
+# - keep practice targets on the private lab subnet only
+# - do not expose deliberately vulnerable services directly to the Internet
+# - uncomment only the targets that actually exist in your lab
+# - keep service_name and host_name stable so dashboards and alerts stay readable
+#
+# Example 1: Linux training web app
+# - targets:
+#     - http://192.168.1.50/
+#   labels:
+#     probe_group: practice_http
+#     service_name: practice_linux_web
+#     dashboard_name: practice_targets
+#     host_name: practice_vm_linux
+#     role: practice_target
+#     os_family: linux
+#     lab_segment: practice_linux
+#     target_profile: web_training
+#
+# Example 2: Windows training web app
+# - targets:
+#     - http://192.168.1.60/
+#   labels:
+#     probe_group: practice_http
+#     service_name: practice_windows_web
+#     dashboard_name: practice_targets
+#     host_name: practice_vm_windows
+#     role: practice_target
+#     os_family: windows
+#     lab_segment: practice_windows
+#     target_profile: web_training
+#
+# Example 3: Auth or API target on a non-default port
+# - targets:
+#     - http://192.168.1.70:8080/
+#   labels:
+#     probe_group: practice_http
+#     service_name: practice_auth_api
+#     dashboard_name: practice_targets
+#     host_name: practice_vm_api
+#     role: practice_target
+#     os_family: linux
+#     lab_segment: practice_api
+#     target_profile: auth_api_training
+
+# Active starter set
+- targets:
+    - http://192.168.1.50/
+  labels:
+    probe_group: practice_http
+    service_name: practice_linux_web
+    dashboard_name: practice_targets
+    host_name: practice_vm_linux
+    role: practice_target
+    os_family: linux
+    lab_segment: practice_linux
+    target_profile: web_training
+
+- targets:
+    - http://192.168.1.60/
+  labels:
+    probe_group: practice_http
+    service_name: practice_windows_web
+    dashboard_name: practice_targets
+    host_name: practice_vm_windows
+    role: practice_target
+    os_family: windows
+    lab_segment: practice_windows
+    target_profile: web_training
+
+- targets:
+    - http://192.168.1.70:8080/
+  labels:
+    probe_group: practice_http
+    service_name: practice_auth_api
+    dashboard_name: practice_targets
+    host_name: practice_vm_api
+    role: practice_target
+    os_family: linux
+    lab_segment: practice_api
+    target_profile: auth_api_training
