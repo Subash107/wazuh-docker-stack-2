@@ -79,6 +79,8 @@ Monitoring host:
 
 - `docker compose config`
 - `docker compose ps`
+- `powershell -ExecutionPolicy Bypass -File .\scripts\windows\Invoke-Day1Check.ps1`
+- `powershell -ExecutionPolicy Bypass -File .\scripts\windows\Invoke-LabIdeologyAudit.ps1`
 - `docker run --rm --entrypoint promtool -v ${PWD}/prometheus.yml:/etc/prometheus/prometheus.yml -v ${PWD}/alert.rules.yml:/etc/prometheus/alert.rules.yml -v ${PWD}/targets:/etc/prometheus/targets prom/prometheus@sha256:4a61322ac1103a0e3aea2a61ef1718422a48fa046441f299d71e660a3bc71ae9 check config /etc/prometheus/prometheus.yml`
 
 Sensor VM:
@@ -91,3 +93,8 @@ Sensor VM:
 - `curl http://192.168.1.6:8080/admin/login`
 - `curl -i http://192.168.1.6:8083/` and confirm `403 Authentication Required`
 - `dig @192.168.1.6 example.com`
+
+Optional practice-target verification:
+
+- populate `targets/practice_http_endpoints.yml` with isolated training targets on the private lab subnet
+- confirm `practice_http_endpoints` appears in Prometheus targets after the inventory is populated

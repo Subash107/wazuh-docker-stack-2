@@ -116,6 +116,7 @@ Expected state:
 
 - `targets/ping_servers.yml`: ICMP inventory
 - `targets/sensor_http_endpoints.yml`: Pi-hole and mitmproxy UI
+- `targets/practice_http_endpoints.yml`: isolated practice-target HTTP inventory
 - `targets/sensor_tcp_endpoints.yml`: mitmproxy proxy listener
 - `targets/sensor_dns_endpoints.yml`: Pi-hole DNS listener
 - `scripts/python/service_index_assets/service_catalog.json`: operator-facing link and credential source inventory

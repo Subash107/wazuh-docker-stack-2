@@ -64,6 +64,7 @@ The root monitoring stack expects the external Docker volume `single-node_wazuh_
 - `grafana/`: provisioned datasource and monitoring dashboards
 - `targets/ping_servers.yml`: file-based ICMP target inventory
 - `targets/sensor_http_endpoints.yml`: Pi-hole and mitmproxy HTTP probe inventory
+- `targets/practice_http_endpoints.yml`: optional isolated practice-target HTTP inventory
 - `targets/sensor_tcp_endpoints.yml`: mitmproxy TCP probe inventory
 - `targets/sensor_dns_endpoints.yml`: Pi-hole DNS probe inventory
 
@@ -76,6 +77,7 @@ The root monitoring stack expects the external Docker volume `single-node_wazuh_
 - `docs/runbooks/bare-metal-rebuild-drill.md`: staged clean-host rebuild rehearsal from the recovery bundle and secret vault
 - `docs/runbooks/ubuntu-lightweight-soc.md`: low-resource Ubuntu SOC profile with Suricata, Cowrie, Wazuh ingestion, and Grafana
 - `docs/reference/repository-layout.md`: folder map for source-of-truth files vs generated recovery artifacts
+- `docs/operator-handbook/lab-environment-guide.md`: applies closed-network lab, recovery, multi-OS, duplicate-tool, and practice-target principles to this repo
 - `docs/operator-handbook/README.md`: installation, troubleshooting, tools usage, access inventory, and threat monitoring guides
 - `docs/pdf-handbook/README.md`: offline PDF export set in one folder
 - `scripts/windows/Invoke-ProjectSecretMigration.ps1`: move local secrets into gitignored secret files
@@ -87,6 +89,8 @@ The root monitoring stack expects the external Docker volume `single-node_wazuh_
 - `scripts/windows/Invoke-SecretVaultRekey.ps1`: rotate the encrypted vault passphrase
 - `scripts/windows/Invoke-BareMetalRebuildDrill.ps1`: stage a clean-host rebuild drill from the recovery bundle and secret vault, including staged sensor bootstrap and archive validation
 - `scripts/windows/Invoke-SensorVmBootstrap.ps1`: Windows entrypoint for the canonical sensor bootstrap
+- `scripts/windows/Invoke-Day1Check.ps1`: run the day-1 readiness and health checklist, with optional stack startup
+- `scripts/windows/Invoke-LabIdeologyAudit.ps1`: audit the repo against the tracked lab ideology profile and practice-target model
 - `scripts/windows/Invoke-PrivateCredentialExport.ps1`: local-only credential export generator
 - `scripts/windows/Invoke-PrivateOperatorLauncher.ps1`: local-only launcher for the public index, private credentials, and PDFs
 - `scripts/windows/Invoke-WazuhSingleNodeCompose.ps1`: local secret-aware wrapper for Wazuh single-node compose commands
